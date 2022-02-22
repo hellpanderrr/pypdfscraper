@@ -1,6 +1,7 @@
 import itertools
 import os
 from contextlib import contextmanager
+from dataclasses import dataclass
 from typing import Literal
 from typing import Optional
 from typing import Union, List, Callable, Tuple, Dict, Any, NamedTuple
@@ -12,7 +13,6 @@ from pdfminer.high_level import extract_pages
 from pdfminer.image import ImageWriter
 from pdfminer.layout import LTChar
 from pydantic import confloat
-from dataclasses import dataclass
 
 from pdfscraper.utils import (
     group_objs_y,
@@ -33,9 +33,9 @@ class Color:
 
     def __eq__(self, other, decimals=1):
         if (
-            round(self.r, decimals) == round(other.r, decimals)
-            and round(self.b, decimals) == round(other.b, decimals)
-            and round(self.g, decimals) == round(other.g, decimals)
+                round(self.r, decimals) == round(other.r, decimals)
+                and round(self.b, decimals) == round(other.b, decimals)
+                and round(self.g, decimals) == round(other.g, decimals)
         ):
             return True
         else:
@@ -84,13 +84,13 @@ class Word:
     __slots__ = ("text", "bbox", "font", "size", "color")
 
     def __init__(
-        self,
-        text: str = "",
-        bbox: Union[Bbox, List[int], Tuple[int]] = None,
-        font: str = "",
-        size: str = "",
-        color=None,
-        normalize_text=False,
+            self,
+            text: str = "",
+            bbox: Union[Bbox, List[int], Tuple[int]] = None,
+            font: str = "",
+            size: str = "",
+            color=None,
+            normalize_text=False,
     ):
         self.text = text
         if normalize_text:
@@ -268,7 +268,6 @@ def process_mupdf_drawing(drawing: Dict, orientation):
         return CurveShape(**args)
 
 
-
 @dataclass
 class PageVerticalOrientation:
     bottom_is_zero: bool
@@ -321,7 +320,7 @@ class Image:
 
     @classmethod
     def from_pdfminer(
-        cls, image: pdfminer.layout.LTImage, orientation: PageVerticalOrientation
+            cls, image: pdfminer.layout.LTImage, orientation: PageVerticalOrientation
     ):
         if orientation.bottom_is_zero:
             bbox = Bbox(*image.bbox)
@@ -357,7 +356,7 @@ class Image:
 
     @classmethod
     def from_mupdf(
-        cls, image: Dict, doc: fitz.fitz.Document, orientation: PageVerticalOrientation
+            cls, image: Dict, doc: fitz.fitz.Document, orientation: PageVerticalOrientation
     ):
         bbox = image.get("bbox")
         if orientation.bottom_is_zero:
@@ -394,15 +393,15 @@ class Image:
 def get_images_from_mupdf_page(page):
     images = page.get_images()
     for (
-        xref,
-        smask,
-        source_width,
-        source_height,
-        bpc,
-        colorspace,
-        alt_colorspace,
-        name,
-        decode_filter,
+            xref,
+            smask,
+            source_width,
+            source_height,
+            bpc,
+            colorspace,
+            alt_colorspace,
+            name,
+            decode_filter,
     ) in images:
         bbox = page.get_image_bbox(name)
         yield {
@@ -455,7 +454,7 @@ def process_span_fitz(span: dict, move=None):
 
 
 def process_span_pdfminer(
-    span: List[LTChar], move: float = None, height: float = 0
+        span: List[LTChar], move: float = None, height: float = 0
 ) -> Span:
     """
     Convert a list of pdfminer characters into a Span.
