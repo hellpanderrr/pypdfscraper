@@ -1,11 +1,12 @@
 import fitz
+import os
 from pdfminer.high_level import extract_pages
 
 from pdfscraper.layout import Page
 
 
 def test_drawings():
-    test_path = r'samples\test2.pdf'
+    test_path = os.path.join('samples', 'test2.pdf')
     doc = fitz.open(test_path)
     fitz_page = doc[0]
     pdfminer_page = list(extract_pages(test_path))[0]
