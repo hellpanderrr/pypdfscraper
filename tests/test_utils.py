@@ -1,6 +1,7 @@
 import pytest
 
-from pdfscraper.utils import group_objs_y, Word, Bbox, get_span_bbox
+from pdfscraper.utils import group_objs_y
+from pdfscraper.layout import  Word, Bbox, get_span_bbox
 
 @pytest.fixture
 def words():
