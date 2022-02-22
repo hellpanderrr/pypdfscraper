@@ -5,7 +5,7 @@ from pdfscraper.layout import Page
 
 
 def test_drawings():
-    path = r'C:\projects\test2.pdf'
+    path = r'samples\test2.pdf'
     doc = fitz.open(path)
     fitz_page = doc[0]
     pdfminer_page = list(extract_pages(path))[0]
