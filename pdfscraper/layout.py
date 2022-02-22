@@ -393,11 +393,6 @@ class Image:
 
 def get_images_from_mupdf_page(page):
     images = page.get_images()
-    image_infos = page.get_image_info(xrefs=True)
-    xref2info = {}
-    for k in image_infos:
-        xref = k.pop("xref")
-        xref2info[xref] = k
     for (
         xref,
         smask,
