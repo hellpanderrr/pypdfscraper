@@ -638,17 +638,17 @@ def get_span_bbox(span: List) -> Bbox:
 def line2str(line: List[Word]) -> str:
     return " ".join(map(str, line))
 
-
-path = r"C:\projects\test2.pdf"
-doc = fitz.open(path)
-fitz_page = doc[0]
-
-pdfminer_page = list(extract_pages(path))[0]
-print(
-    list(
-        zip(
-            Page.from_mupdf(fitz_page).drawings,
-            Page.from_pdfminer(pdfminer_page).drawings,
-        )
-    )
-)
+#
+# path = r"C:\projects\test2.pdf"
+# doc = fitz.open(path)
+# fitz_page = doc[0]
+#
+# pdfminer_page = list(extract_pages(path))[0]
+# print(
+#     list(
+#         zip(
+#             Page.from_mupdf(fitz_page).drawings,
+#             Page.from_pdfminer(pdfminer_page).drawings,
+#         )
+#     )
+# )
