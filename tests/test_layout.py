@@ -16,5 +16,22 @@ def test_drawings():
         assert mupdf_drawing.fill_color == pdfminer_drawing.fill_color
         assert mupdf_drawing.stroke_color == pdfminer_drawing.stroke_color
         assert mupdf_drawing.bbox.__eq__(pdfminer_drawing.bbox, n=2)
-        assert mupdf_drawing.fill == pdfminer_drawing.fill
-        assert mupdf_drawing.stroke == pdfminer_drawing.stroke
+
+
+def test_images():
+    test_path = os.path.join(HERE, 'samples', 'test2.pdf')
+    doc = fitz.open(test_path)
+    fitz_page = doc[0]
+    pdfminer_page = list(extract_pages(test_path))[0]
+    for mupdf_drawing, pdfminer_drawing in zip(Page.from_mupdf(fitz_page).images,
+                                               Page.from_pdfminer(pdfminer_page).images):
+
+        assert mupdf_drawing.bbox == pdfminer_drawing.bbox
+        assert mupdf_drawing.bpc == pdfminer_drawing.bpc
+        assert mupdf_drawing.colorspace_name == pdfminer_drawing.colorspace_name
+        assert mupdf_drawing.name == pdfminer_drawing.name
+        assert mupdf_drawing.xref == pdfminer_drawing.xref
+        assert mupdf_drawing.source_height == pdfminer_drawing.source_height
+        assert mupdf_drawing.source_width == pdfminer_drawing.source_width
+        assert round(mupdf_drawing.width) == round(pdfminer_drawing.width)
+        assert round(mupdf_drawing.height) == round(pdfminer_drawing.height)

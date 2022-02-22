@@ -569,6 +569,8 @@ class Page:
         ]
         drawings = sorted(drawings, key=get_topmost)
         images = get_images_from_mupdf_page(page)
+        images = [Image.from_mupdf(image, page.parent, orientation) for image in images]
+
         page = Page(words=words, drawings=drawings, images=images, raw_object=page)
 
         return page
@@ -602,9 +604,7 @@ class Page:
         drawings = [process_pdfminer_drawing(i, orientation) for i in drawings]
         drawings = sorted(drawings, key=get_topmost)
         images = filter(bool, map(get_image, page))
-        for image in images:
-            im = Image.from_pdfminer(image, orientation)
-
+        images = [Image.from_pdfminer(image, orientation) for image in images]
         page = Page(words=words, images=images, drawings=drawings, raw_object=page)
         return page
 
