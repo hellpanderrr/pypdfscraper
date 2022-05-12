@@ -721,13 +721,13 @@ class Document:
     @classmethod
     def from_mupdf(cls, pdf_file):
         if isinstance(pdf_file, str):
-            doc = fitz.open(path)
+            doc = fitz.open(pdf_file)
             return Document([Page.from_mupdf(page) for page in doc])
 
     @classmethod
     def from_pdfminer(cls, pdf_file):
         if isinstance(pdf_file, str):
-            pages = extract_pages(path)
+            pages = extract_pages(pdf_file)
             return Document([Page.from_pdfminer(page) for page in pages])
 
     def create_sections(self):
