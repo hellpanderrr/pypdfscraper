@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 import os
 from contextlib import contextmanager
@@ -9,12 +11,11 @@ from typing import Union, List, Callable, Tuple, Dict, Any, NamedTuple
 import fitz
 import pdfminer
 import unicodedata
-from pdfminer.high_level import extract_pages
 from pdfminer.image import ImageWriter
 from pdfminer.layout import LTChar
 from pydantic import confloat
 
-from pdfscraper.utils import (
+from .utils import (
     group_objs_y,
     get_leftmost,
     get_rightmost,
@@ -22,10 +23,12 @@ from pdfscraper.utils import (
     get_bottommost,
 )
 
+TEST = 5
+
 ImageSource = Literal["pdfminer", "mupdf"]
 
 
-@dataclass
+@dataclass(frozen=True)
 class Color:
     r: confloat(ge=0, le=1)
     g: confloat(ge=0, le=1)
@@ -42,7 +45,7 @@ class Color:
             return False
 
 
-@dataclass
+@dataclass(frozen=True)
 class Point:
     x: float
     y: float
@@ -79,6 +82,9 @@ class Bbox(NamedTuple):
             y0, y1 = page_height - y1, page_height - y0
             return cls(x0, y0, x1, y1)
 
+    def set_vertical_orientation(self, orientation: PageVerticalOrientation):
+        pass
+
 
 class Word:
     __slots__ = ("text", "bbox", "font", "size", "color")
@@ -100,6 +106,9 @@ class Word:
         self.font = font
         self.size = size
         self.color = color
+
+    def __hash__(self):
+        return hash(repr(self))
 
     def __repr__(self):
         return f'Word(text="{self.text}",bbox={self.bbox})'
@@ -161,7 +170,7 @@ class Block:
         return "Block: %s" % self.lines
 
 
-@dataclass
+@dataclass(frozen=True)
 class Drawing:
     bbox: Bbox
     fill_color: Optional[Color]
@@ -174,17 +183,17 @@ class Drawing:
 #     width: PositiveFloat
 
 
-@dataclass
+@dataclass(frozen=True)
 class RectShape(Drawing):
     points: Optional[Tuple[Point, Point, Point, Point]]
 
 
-@dataclass
+@dataclass(frozen=True)
 class LineShape(Drawing):
     points: Optional[Tuple[Point, Point]]
 
 
-@dataclass
+@dataclass(frozen=True)
 class CurveShape(Drawing):
     points: Optional[Tuple[Point, Point, Point, Point]]
 
@@ -268,7 +277,7 @@ def process_mupdf_drawing(drawing: Dict, orientation):
         return CurveShape(**args)
 
 
-@dataclass
+@dataclass(frozen=True)
 class PageVerticalOrientation:
     bottom_is_zero: bool
     page_height: float
@@ -282,7 +291,7 @@ def attr_as(obj, field: str, value) -> None:
     setattr(obj, field, old_value)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Image:
     bbox: Bbox
     width: float
@@ -321,7 +330,14 @@ class Image:
     @classmethod
     def from_pdfminer(
             cls, image: pdfminer.layout.LTImage, orientation: PageVerticalOrientation
-    ):
+    ) -> Image:
+        """
+        Create an image out of pdfminer object.
+
+        :param image: pdfminer LTImage object.
+        :param orientation: page vertical orientation data.
+        :return:
+        """
         if orientation.bottom_is_zero:
             bbox = Bbox(*image.bbox)
         else:
@@ -357,7 +373,7 @@ class Image:
     @classmethod
     def from_mupdf(
             cls, image: Dict, doc: fitz.fitz.Document, orientation: PageVerticalOrientation
-    ):
+    ) -> Image:
         bbox = image.get("bbox")
         if orientation.bottom_is_zero:
             bbox = Bbox.from_coords(
@@ -391,7 +407,7 @@ class Image:
 
 
 def get_images_from_mupdf_page(page):
-    images = page.get_images()
+    images = page.get_images(full=True)
     for (
             xref,
             smask,
@@ -401,9 +417,21 @@ def get_images_from_mupdf_page(page):
             colorspace,
             alt_colorspace,
             name,
-            decode_filter,
+            decode_filter, 
+            referencer_xref
     ) in images:
-        bbox = page.get_image_bbox(name)
+        bbox = page.get_image_bbox((
+            xref,
+            smask,
+            source_width,
+            source_height,
+            bpc,
+            colorspace,
+            alt_colorspace,
+            name,
+            decode_filter, 
+            referencer_xref
+    ))
         yield {
             "xref": xref,
             "mask_xref": smask,
@@ -417,7 +445,7 @@ def get_images_from_mupdf_page(page):
         }
 
 
-def process_span_fitz(span: dict, move=None):
+def process_span_fitz(span: dict, orientation):
     words = [
         list(g)
         for k, g in (
@@ -430,17 +458,18 @@ def process_span_fitz(span: dict, move=None):
     for word in words:
         x0, y0 = get_leftmost(word[0]["bbox"]), get_topmost(word[0]["bbox"])
         x1, y1 = get_rightmost(word[-1]["bbox"]), get_bottommost(word[-1]["bbox"])
-        if move:
-            y0 += move
-            y1 += move
+
         coords.append([x0, y0, x1, y1])
         text = "".join([c["c"] for c in word])
-
+        if orientation.bottom_is_zero:
+            bbox = Bbox.from_coords((x0, y0, x1, y1), invert_y=True, page_height=orientation.page_height)
+        else:
+            bbox = Bbox(x0=x0, y0=y0, x1=x1, y1=y1)
         new_words.append(
             Word(
                 **{
                     "text": text,
-                    "bbox": Bbox(x0=x0, y0=y0, x1=x1, y1=y1),
+                    "bbox": bbox,
                     "font": span["font"],
                     "size": span["size"],
                     "color": span["color"],
@@ -454,7 +483,7 @@ def process_span_fitz(span: dict, move=None):
 
 
 def process_span_pdfminer(
-        span: List[LTChar], move: float = None, height: float = 0
+        span: List[LTChar], orientation
 ) -> Span:
     """
     Convert a list of pdfminer characters into a Span.
@@ -462,8 +491,7 @@ def process_span_pdfminer(
     Split a list by space into Words.
 
     @param span: list of characters
-    @param move: add this value to y-coordinates
-    @param height: page height
+
     """
     words = [
         list(g)
@@ -473,28 +501,29 @@ def process_span_pdfminer(
     ]
     new_words = []
     coords = []
+
     for word in words:
         if type(word) == pdfminer.layout.LTAnno:
             continue
         # reversing y-coordinates: in pdfminer the zero is the bottom of the page
         # make it top
-        x0, y0 = word[0].x0, word[0].y1
-        x1, y1 = word[-1].x1, word[-1].y0
-        if move:
-            y0 += move
-            y1 += move
-        y0 = height - y0
-        y1 = height - y1
+        x0, y0 = word[0].x0, word[0].y0
+        x1, y1 = word[-1].x1, word[-1].y1
+
         coords.append([x0, y0, x1, y1])
         text = "".join([c.get_text() for c in word])
         font = word[0].fontname
         size = word[0].size
+        if not orientation.bottom_is_zero:
+            bbox = Bbox.from_coords(coords=(x0, y0, x1, y1), invert_y=True, page_height=orientation.page_height)
+        else:
+            bbox = Bbox(x0=x0, y0=y0, x1=x1, y1=y1)
 
         new_words.append(
             Word(
                 **{
                     "text": text,
-                    "bbox": Bbox(x0=x0, y0=y0, x1=x1, y1=y1),
+                    "bbox": bbox,
                     "font": font,
                     "size": size,
                     "color": None,
@@ -507,7 +536,7 @@ def process_span_pdfminer(
     return ret
 
 
-def get_image(layout_object):
+def get_image(layout_object) -> Optional[pdfminer.layout.LTImage]:
     if isinstance(layout_object, pdfminer.layout.LTImage):
         return layout_object
     if isinstance(layout_object, pdfminer.layout.LTContainer):
@@ -517,37 +546,71 @@ def get_image(layout_object):
         return None
 
 
+
+
+
 class Page:
-    def __init__(self, words, drawings, images, raw_object):
+    def __init__(self, words, drawings, images, raw_object, blocks) -> None:
 
         self.words = words
         self.drawings = drawings
         self.images = images
         self.raw_object = raw_object
+        self.blocks = blocks
+        # self.wordlines = self.sorted
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Page: %s" % "".join([repr(i) + "\n" for i in self.words])
 
-    def select(self, condition: Callable):
+    def select(self, condition: Callable) -> Page:
         """
         Find content matching condition.
         """
         words = [i for i in self.words if condition(i)]
         drawings = [i for i in self.drawings if condition(i)]
-        ret = Page(words=words, drawings=drawings)
+        images = [i for i in self.images if condition(i)]
+        ret = Page(words=words, drawings=drawings, images=images, blocks=self.blocks, raw_object=self.raw_object)
         return ret
+
+    @staticmethod
+    def _split_sequence_by_condition(seq, condition):
+        success = []
+        failure = []
+        for i in seq:
+            if condition(i):
+                success.append(i)
+            else:
+                failure.append(i)
+        return success, failure
+
+    def split(self, condition: Callable):
+
+        words_true, words_false = self._split_sequence_by_condition(self.words, condition)
+        drawings_true, drawings_false = self._split_sequence_by_condition(self.drawings, condition)
+        images_true, images_false = self._split_sequence_by_condition(self.images, condition)
+        ret_1 = PageSection(words=words_true, drawings=drawings_true, images=images_true, parent=self,
+                            condition=condition)
+        ret_2 = PageSection(words=words_false, drawings=drawings_false, images=images_false, parent=self,
+                            condition=condition)
+
+        return ret_1, ret_2
 
     @property
     def sorted(self) -> List[List[Word]]:
+        if len(self.words) == 0:
+            return [[]]
         return group_objs_y(self.words)
 
     @classmethod
-    def from_mupdf(cls, page: fitz.fitz.Page):
+    def from_mupdf(cls, page: fitz.fitz.Page) -> Page:
+        orientation = PageVerticalOrientation(
+            bottom_is_zero=False, page_height=Bbox(*page.rect).height
+        )
         blocks = page.get_text("rawdict", flags=3)["blocks"]
         for block in blocks:
             for line in block["lines"]:
                 for j, span in enumerate(line["spans"]):
-                    line["spans"][j] = process_span_fitz(span)
+                    line["spans"][j] = process_span_fitz(span, orientation)
         for block in blocks:
             for k, line in enumerate(block["lines"]):
                 block["lines"][k] = Line(bbox=(line["bbox"]), spans=line["spans"])
@@ -556,9 +619,7 @@ class Page:
             blocks[n] = Block(bbox=(block["bbox"]), lines=block["lines"])
 
         drawings = sorted(page.get_drawings(), key=lambda x: x["rect"][1])
-        orientation = PageVerticalOrientation(
-            bottom_is_zero=False, page_height=Bbox(*page.rect).height
-        )
+
         drawings = [process_mupdf_drawing(i, orientation) for i in drawings]
         words = [
             word
@@ -571,14 +632,17 @@ class Page:
         images = get_images_from_mupdf_page(page)
         images = [Image.from_mupdf(image, page.parent, orientation) for image in images]
 
-        page = Page(words=words, drawings=drawings, images=images, raw_object=page)
+        page = Page(words=words, drawings=drawings, images=images, raw_object=page, blocks=blocks)
 
         return page
 
     @classmethod
-    def from_pdfminer(cls, page: pdfminer.layout.LTPage) -> "Page":
+    def from_pdfminer(cls, page: pdfminer.layout.LTPage) -> Page:
         blocks = []
         text_boxes = [i for i in page if hasattr(i, "get_text")]
+        orientation = PageVerticalOrientation(
+            bottom_is_zero=False, page_height=page.height
+        )
         for text_box in text_boxes:
             # get text lines
             lines = [
@@ -586,10 +650,7 @@ class Page:
             ]
             # convert lines into spans
             lines = [
-                process_span_pdfminer(
-                    [i for i in line if type(i) != pdfminer.layout.LTAnno],
-                    height=page.height,
-                )
+                process_span_pdfminer([i for i in line if type(i) != pdfminer.layout.LTAnno], orientation)
                 for line in lines
             ]
             # make a block out of spans
@@ -598,16 +659,24 @@ class Page:
             word for block in blocks for line in block.lines for word in line.words
         ]
         drawings = [i for i in page if issubclass(type(i), pdfminer.layout.LTCurve)]
-        orientation = PageVerticalOrientation(
-            bottom_is_zero=False, page_height=page.height
-        )
+
         drawings = [process_pdfminer_drawing(i, orientation) for i in drawings]
         drawings = sorted(drawings, key=get_topmost)
         images = filter(bool, map(get_image, page))
         images = [Image.from_pdfminer(image, orientation) for image in images]
-        page = Page(words=words, images=images, drawings=drawings, raw_object=page)
+        page = Page(words=words, images=images, drawings=drawings, raw_object=page, blocks=blocks)
         return page
 
+
+@dataclass
+class PageSection(Page):
+    words: List[Word]
+    drawings: List
+    images: List
+
+    condition: str
+    parent: Page
+    name: str = ''
 
 def get_span_bbox(span: List) -> Bbox:
     """
