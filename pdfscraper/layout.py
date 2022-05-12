@@ -11,11 +11,12 @@ from typing import Union, List, Callable, Tuple, Dict, Any, NamedTuple
 import fitz
 import pdfminer
 import unicodedata
+from pdfminer.high_level import extract_pages
 from pdfminer.image import ImageWriter
 from pdfminer.layout import LTChar
 from pydantic import confloat
 
-from .utils import (
+from pdfscraper.utils import (
     group_objs_y,
     get_leftmost,
     get_rightmost,
@@ -215,9 +216,17 @@ def get_pts(drawing: Dict):
 
 def process_pdfminer_drawing(drawing: Union[LTRect, LTLine, LTCurve], orientation):
     fill = drawing.fill
-    fill_color = Color(*drawing.non_stroking_color) if fill else None
+    fill_color = None
+    stroke_color = None
+    if fill:
+        if len(drawing.non_stroking_color) == 1:
+            drawing.non_stroking_color *= 3
+        fill_color = Color(*drawing.non_stroking_color)
     stroke = drawing.stroke
-    stroke_color = Color(*drawing.stroking_color) if stroke else None
+    if stroke:
+        if len(drawing.stroking_color) == 1:
+            drawing.stroking_color *= 3
+        stroke_color = Color(*drawing.stroking_color)
     # pdfminer has bottom as y-zero
     if orientation.bottom_is_zero:
         bbox = Bbox(*drawing.bbox)
@@ -349,8 +358,11 @@ class Image:
             colorspace_name = image.colorspace[0].name
         else:
             objs = image.colorspace[0].resolve()
-            colorspaces = [i for i in objs if hasattr(i, "name")]
-            colorspace_name = colorspaces[0].name
+            if type(objs) == pdfminer.psparser.PSLiteral:
+                colorspace_name = objs.name
+            else:
+                colorspaces = [i for i in objs if hasattr(i, "name")]
+                colorspace_name = colorspaces[0].name
 
         name = image.name
         source_width, source_height = image.srcsize
@@ -417,7 +429,7 @@ def get_images_from_mupdf_page(page):
             colorspace,
             alt_colorspace,
             name,
-            decode_filter, 
+            decode_filter,
             referencer_xref
     ) in images:
         bbox = page.get_image_bbox((
@@ -429,9 +441,9 @@ def get_images_from_mupdf_page(page):
             colorspace,
             alt_colorspace,
             name,
-            decode_filter, 
+            decode_filter,
             referencer_xref
-    ))
+        ))
         yield {
             "xref": xref,
             "mask_xref": smask,
@@ -544,9 +556,6 @@ def get_image(layout_object) -> Optional[pdfminer.layout.LTImage]:
             return get_image(child)
     else:
         return None
-
-
-
 
 
 class Page:
@@ -678,6 +687,7 @@ class PageSection(Page):
     parent: Page
     name: str = ''
 
+
 def get_span_bbox(span: List) -> Bbox:
     """
     Calculate bounding box for a span.
@@ -704,8 +714,29 @@ def get_span_bbox(span: List) -> Bbox:
     return bbox
 
 
+@dataclass
+class Document:
+    pages: List[Page]
+
+    @classmethod
+    def from_mupdf(cls, pdf_file):
+        if isinstance(pdf_file, str):
+            doc = fitz.open(path)
+            return Document([Page.from_mupdf(page) for page in doc])
+
+    @classmethod
+    def from_pdfminer(cls, pdf_file):
+        if isinstance(pdf_file, str):
+            pages = extract_pages(path)
+            return Document([Page.from_pdfminer(page) for page in pages])
+
+    def create_sections(self):
+        pass
+
+
 def line2str(line: List[Word]) -> str:
     return " ".join(map(str, line))
+
 
 #
 # path = r"C:\projects\test2.pdf"
@@ -721,3 +752,7 @@ def line2str(line: List[Word]) -> str:
 #         )
 #     )
 # )
+path = r'C:\projects\pypdfscraper\tests\samples\test.pdf'
+# path = r"C:\projects\test2.pdf"
+pdfminer_doc = Document.from_pdfminer(path)
+mu_doc = Document.from_mupdf(path)
