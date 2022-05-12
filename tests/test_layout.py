@@ -39,7 +39,7 @@ def test_images():
 
 
 def test_text():
-    test_path = os.path.join(HERE, 'samples', 'test.pdf')
+    test_path = os.path.join(HERE, 'samples', 'words_test.pdf')
     doc = fitz.open(test_path)
     fitz_page = doc[0]
     pages = extract_pages(test_path)
@@ -47,4 +47,4 @@ def test_text():
     for mupdf_line, pdfminer_line in zip(Page.from_mupdf(fitz_page).sorted,
                                          Page.from_pdfminer(pdfminer_page).sorted):
         for mupdf_word, pdfminer_word in zip(mupdf_line, pdfminer_line):
-            assert (mupdf_word.text, pdfminer_word.text)
+            assert (mupdf_word.text == pdfminer_word.text)
