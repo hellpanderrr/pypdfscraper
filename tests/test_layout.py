@@ -3,7 +3,7 @@ import os
 import fitz
 from pdfminer.high_level import extract_pages
 
-from pdfscraper.layout import Page
+from pdfscraper.layout import Page, PageVerticalOrientation, PDFMinerAnnotation, PyMuPDFAnnotation, Annotation
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -38,6 +38,17 @@ def test_images():
         assert round(mupdf_drawing.height) == round(pdfminer_drawing.height)
 
 
+def test_images_saving():
+    test_path = os.path.join(HERE, 'samples', 'test2.pdf')
+    doc = fitz.open(test_path)
+    fitz_page = doc[0]
+    pdfminer_page = list(extract_pages(test_path))[0]
+    for mupdf_image, pdfminer_image in zip(Page.from_mupdf(fitz_page).images,
+                                           Page.from_pdfminer(pdfminer_page).images):
+        mupdf_image.save('test.png')
+        pdfminer_image.save('test.png')
+
+
 def test_text():
     test_path = os.path.join(HERE, 'samples', 'words_test.pdf')
     doc = fitz.open(test_path)
@@ -48,3 +59,39 @@ def test_text():
                                          Page.from_pdfminer(pdfminer_page).sorted):
         for mupdf_word, pdfminer_word in zip(mupdf_line, pdfminer_line):
             assert (mupdf_word.text == pdfminer_word.text)
+
+
+def test_annotations():
+    from pdfminer.layout import LAParams
+    from pdfminer.converter import PDFResourceManager, PDFPageAggregator
+    from pdfminer.pdfpage import PDFPage
+    from pdfminer.layout import LTTextBoxHorizontal
+    from pdfminer.pdfinterp import PDFPageInterpreter
+    from pdfminer import pdftypes
+
+    path = os.path.join(HERE, 'samples', 'anno_test.pdf')
+    document = open(path, 'rb')
+    rsrcmgr = PDFResourceManager()
+    laparams = LAParams()
+    # Create a PDF page aggregator object.
+    device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+    interpreter = PDFPageInterpreter(rsrcmgr, device)
+    for page in PDFPage.get_pages(document):
+        interpreter.process_page(page)
+        # receive the LTPage object for the page.
+        layout = device.get_result()
+        for element in layout:
+            if isinstance(element, LTTextBoxHorizontal):
+                print(element.get_text())
+        break
+    miner_annots = pdftypes.resolve1(page.annots)
+    doc = fitz.open(path)
+    page = doc[0]
+    annots = list(page.annots())
+
+    orientation = PageVerticalOrientation(bottom_is_zero=False, page_height=layout.height)
+    for a1, a2 in zip(annots, [i.resolve() for i in miner_annots]):
+        anno1 = PyMuPDFAnnotation.from_annot(a1)
+        anno2 = PDFMinerAnnotation.from_annot(a2)
+        assert (Annotation.from_pymupdf_annot(anno1, orientation=orientation).content ==
+              Annotation.from_pdfminer_annot(anno2, orientation=orientation).content)

@@ -4,16 +4,17 @@ import itertools
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, TypeVar
 from typing import Optional
+from typing import TypedDict
 from typing import Union, List, Callable, Tuple, Dict, Any, NamedTuple
 
 import fitz
 import pdfminer
-import unicodedata
 from pdfminer.high_level import extract_pages
-from pdfminer.image import ImageWriter
-from pdfminer.layout import LTChar
+from pdfminer.layout import LTRect, LTLine, LTCurve
+from pdfminer import pdftypes
+import unicodedata
 from pydantic import confloat
 
 from pdfscraper.utils import (
@@ -180,10 +181,6 @@ class Drawing:
     stroke: bool
 
 
-#     height: PositiveFloat
-#     width: PositiveFloat
-
-
 @dataclass(frozen=True)
 class RectShape(Drawing):
     points: Optional[Tuple[Point, Point, Point, Point]]
@@ -199,10 +196,9 @@ class CurveShape(Drawing):
     points: Optional[Tuple[Point, Point, Point, Point]]
 
 
-from pdfminer.layout import LTRect, LTLine, LTCurve
 
 
-def get_pts(drawing: Dict):
+def get_pts(drawing: Dict) -> List:
     ret = []
     for i in drawing["items"]:
         for j in i[1:]:
@@ -214,14 +210,23 @@ def get_pts(drawing: Dict):
     return ret
 
 
-def process_pdfminer_drawing(drawing: Union[LTRect, LTLine, LTCurve], orientation):
+Shape = TypeVar('Shape', bound=Union[LineShape, RectShape, CurveShape])
+
+
+def process_pdfminer_drawing(drawing: Union[LTRect, LTLine, LTCurve], orientation) -> Shape:
     fill = drawing.fill
     fill_color = None
     stroke_color = None
     if fill:
-        if len(drawing.non_stroking_color) == 1:
-            drawing.non_stroking_color *= 3
-        fill_color = Color(*drawing.non_stroking_color)
+        if hasattr(drawing.non_stroking_color, '__len__'):
+            if len(drawing.non_stroking_color) == 1:
+                drawing.non_stroking_color *= 3
+            fill_color = Color(*drawing.non_stroking_color)
+        else:
+            if drawing.non_stroking_color:
+                fill_color = Color(*[drawing.non_stroking_color]*3)
+            else:
+                fill_color = Color(0, 0, 0)
     stroke = drawing.stroke
     if stroke:
         if len(drawing.stroking_color) == 1:
@@ -251,7 +256,7 @@ def process_pdfminer_drawing(drawing: Union[LTRect, LTLine, LTCurve], orientatio
         return CurveShape(**args)
 
 
-def process_mupdf_drawing(drawing: Dict, orientation):
+def process_mupdf_drawing(drawing: Dict, orientation) -> Shape:
     items = drawing["items"]
     fill = "f" in drawing["type"]
     fill_color = Color(*drawing["fill"]) if fill else None
@@ -321,10 +326,11 @@ class Image:
 
     def _save_pdfminer(self, path: str):
         path, ext = os.path.splitext(path)
+        path = os.path.abspath(path)
         folder, name = os.path.split(path)
         im = self.raw_object
         with attr_as(im, "name", name):
-            return ImageWriter(folder).export_image(im)
+            return pdfminer.image.ImageWriter(folder).export_image(im)
 
     def _save_mupdf(self, path: str):
         with open(path, "wb") as f:
@@ -418,7 +424,19 @@ class Image:
         )
 
 
-def get_images_from_mupdf_page(page):
+class MuPDFImage(TypedDict):
+    xref: int
+    mask_xref: int
+    source_width: int
+    source_height: int
+    bpc: int
+    colorspace_name: str
+    name: str
+    decode_filter: str
+    bbox: Tuple
+
+
+def get_images_from_mupdf_page(page) -> MuPDFImage:
     images = page.get_images(full=True)
     for (
             xref,
@@ -457,7 +475,7 @@ def get_images_from_mupdf_page(page):
         }
 
 
-def process_span_fitz(span: dict, orientation):
+def process_span_fitz(span: dict, orientation) -> Span:
     words = [
         list(g)
         for k, g in (
@@ -495,7 +513,7 @@ def process_span_fitz(span: dict, orientation):
 
 
 def process_span_pdfminer(
-        span: List[LTChar], orientation
+        span: List[pdfminer.layout.LTChar], orientation
 ) -> Span:
     """
     Convert a list of pdfminer characters into a Span.
@@ -559,8 +577,8 @@ def get_image(layout_object) -> Optional[pdfminer.layout.LTImage]:
 
 
 class Page:
-    def __init__(self, words, drawings, images, raw_object, blocks) -> None:
-
+    def __init__(self, words: List[Word], drawings: List[Shape], images: List[Image],
+                 raw_object: Union[fitz.fitz.Page, pdfminer.layout.LTPage], blocks: List[Block]) -> None:
         self.words = words
         self.drawings = drawings
         self.images = images
@@ -604,6 +622,12 @@ class Page:
 
         return ret_1, ret_2
 
+    def take_screenshot(self, area: Tuple[float, float, float, float], output_path):
+        if isinstance(self.raw_object, fitz.fitz.Page):
+            self.raw_object.get_pixmap(dpi=300, clip=area).save(output_path)
+        else:
+            raise NotImplementedError('Only PyMuPDF pages support taking screenshots.')
+
     @property
     def sorted(self) -> List[List[Word]]:
         if len(self.words) == 0:
@@ -615,21 +639,25 @@ class Page:
         orientation = PageVerticalOrientation(
             bottom_is_zero=False, page_height=Bbox(*page.rect).height
         )
-        blocks = page.get_text("rawdict", flags=3)["blocks"]
-        for block in blocks:
-            for line in block["lines"]:
-                for j, span in enumerate(line["spans"]):
-                    line["spans"][j] = process_span_fitz(span, orientation)
-        for block in blocks:
-            for k, line in enumerate(block["lines"]):
-                block["lines"][k] = Line(bbox=(line["bbox"]), spans=line["spans"])
+        def _get_blocks_from_page(page):
+            blocks = page.get_text("rawdict", flags=3)["blocks"]
+            for block in blocks:
+                for line in block["lines"]:
+                    for j, span in enumerate(line["spans"]):
+                        line["spans"][j] = process_span_fitz(span, orientation)
+            for block in blocks:
+                for k, line in enumerate(block["lines"]):
+                    block["lines"][k] = Line(bbox=(line["bbox"]), spans=line["spans"])
 
-        for n, block in enumerate(blocks):
-            blocks[n] = Block(bbox=(block["bbox"]), lines=block["lines"])
+            for n, block in enumerate(blocks):
+                blocks[n] = Block(bbox=(block["bbox"]), lines=block["lines"])
+            return blocks
 
         drawings = sorted(page.get_drawings(), key=lambda x: x["rect"][1])
-
         drawings = [process_mupdf_drawing(i, orientation) for i in drawings]
+        drawings = sorted(drawings, key=get_topmost)
+
+        blocks = _get_blocks_from_page(page)
         words = [
             word
             for block in blocks
@@ -637,11 +665,11 @@ class Page:
             for span in line.spans
             for word in span.words
         ]
-        drawings = sorted(drawings, key=get_topmost)
+
         images = get_images_from_mupdf_page(page)
         images = [Image.from_mupdf(image, page.parent, orientation) for image in images]
 
-        page = Page(words=words, drawings=drawings, images=images, raw_object=page, blocks=blocks)
+        page = cls(words=words, drawings=drawings, images=images, raw_object=page, blocks=blocks)
 
         return page
 
@@ -673,7 +701,7 @@ class Page:
         drawings = sorted(drawings, key=get_topmost)
         images = filter(bool, map(get_image, page))
         images = [Image.from_pdfminer(image, orientation) for image in images]
-        page = Page(words=words, images=images, drawings=drawings, raw_object=page, blocks=blocks)
+        page = cls(words=words, images=images, drawings=drawings, raw_object=page, blocks=blocks)
         return page
 
 
@@ -682,7 +710,6 @@ class PageSection(Page):
     words: List[Word]
     drawings: List
     images: List
-
     condition: str
     parent: Page
     name: str = ''
@@ -717,25 +744,163 @@ def get_span_bbox(span: List) -> Bbox:
 @dataclass
 class Document:
     pages: List[Page]
+    doc: Any
+    @classmethod
+    def from_mupdf(cls, path) -> Document:
+        if isinstance(path, str):
+            doc = fitz.open(path)
+            return cls(pages=[Page.from_mupdf(page) for page in doc], doc=doc)
 
     @classmethod
-    def from_mupdf(cls, pdf_file):
-        if isinstance(pdf_file, str):
-            doc = fitz.open(pdf_file)
-            return Document([Page.from_mupdf(page) for page in doc])
-
-    @classmethod
-    def from_pdfminer(cls, pdf_file):
-        if isinstance(pdf_file, str):
-            pages = extract_pages(pdf_file)
-            return Document([Page.from_pdfminer(page) for page in pages])
+    def from_pdfminer(cls, path) -> Document:
+        if isinstance(path, str):
+            pages = extract_pages(path)
+            return cls([Page.from_pdfminer(page) for page in pages],doc=None)
 
     def create_sections(self):
         pass
 
 
+@dataclass
+class PyMuPDFAnnotation:
+    border: Dict
+    colors: Dict
+    flags: int
+    has_popup: bool
+    info: Dict
+    is_open: bool
+    line_ends: tuple
+    next_annotation: 'Annotation'
+    opacity: float
+    popup_rect: tuple
+    popup_xref: int
+    rect: tuple
+    anno_type: tuple
+    vertices: list
+    xref: int
+
+    @classmethod
+    def from_annot(cls, annot: Dict):
+        border = annot.border
+        colors = annot.colors
+        flags = annot.flags
+        has_popup = annot.has_popup
+        info = annot.info
+        is_open = annot.is_open
+        line_ends = annot.line_ends
+        opacity = annot.opacity
+        next_annotation = annot.next
+        popup_rect = annot.popup_rect
+        popup_xref = annot.popup_xref
+        rect = annot.rect
+        anno_type = annot.type
+        vertices = annot.vertices
+        xref = annot.xref
+
+        return cls(border=border,
+                   colors=colors,
+                   flags=flags,
+                   has_popup=has_popup,
+                   info=info,
+                   is_open=is_open,
+                   line_ends=line_ends,
+                   next_annotation=next_annotation,
+                   opacity=opacity,
+                   popup_rect=popup_rect,
+                   popup_xref=popup_xref,
+                   rect=rect,
+                   anno_type=anno_type,
+                   vertices=vertices,
+                   xref=xref)
+
+
+@dataclass
+class PDFMinerAnnotation:
+    subject: str
+    flags: int
+    color: List
+    creation_date: str
+    mod_date: str
+    name: str
+    author: str
+    rect: List
+    content: str
+
+    @staticmethod
+    def normalize_value(s):
+        if s:
+            return pdfminer.utils.decode_text(s)
+        return s
+
+    @classmethod
+    def from_annot(cls, annot: Dict):
+        subject = annot.get('Subj')
+        flags = annot.get('F')
+        color = annot.get('C')
+        creation_date = annot.get('CreationDate')
+        mod_date = annot.get('M') or annot.get('ModDate')
+        rect = pdftypes.resolve1(annot.get('Rect'))
+        author = annot.get('T')
+        content = annot.get('Contents','')
+        name = annot.get('NM')
+        content, name, author, mod_date, creation_date, subject = [
+            cls.normalize_value(i)
+            for i in (content, name, author, mod_date, creation_date, subject)
+        ]
+        return cls(subject=subject,
+                   flags=flags,
+                   color=color,
+                   creation_date=creation_date,
+                   mod_date=mod_date,
+                   rect=rect,
+                   author=author,
+                   content=content,
+                   name=name)
+
+
+@dataclass
+class Annotation:
+    content: str
+    author: str
+    mod_date: str
+    creation_date: str
+    rect: Bbox
+
+    @classmethod
+    def from_pymupdf_annot(cls, annot, orientation):
+        content = annot.info.get('content')
+        author = annot.info.get('title')
+        name = annot.info.get('id')
+        creation_date = annot.info.get('creationDate')
+        mod_date = annot.info.get('modDate')
+        subject = annot.info.get('subject')
+        if orientation.bottom_is_zero:
+            rect = Bbox.from_coords(*annot.rect, invert_y=True, page_height=orientation.page_height)
+        else:
+            rect = Bbox(*annot.rect)
+
+        return cls(content=content,
+                   author=author,
+                   mod_date=mod_date,
+                   creation_date=creation_date,
+                   rect=rect)
+
+    @classmethod
+    def from_pdfminer_annot(cls, annot, orientation):
+        if orientation.bottom_is_zero:
+            rect = Bbox(*annot.rect)
+        else:
+            rect = Bbox.from_coords(
+                coords=annot.rect, invert_y=True, page_height=orientation.page_height
+            )
+        return cls(content=annot.content,
+                   author=annot.author,
+                   mod_date=annot.mod_date,
+                   creation_date=annot.creation_date,
+                   rect=rect)
+
 def line2str(line: List[Word]) -> str:
     return " ".join(map(str, line))
 
-
-
+#Document.from_pdfminer(r'C:\projects\fohlio\hotels\holiday inn\new\20200218_HI_BALWM_Public_Space_FF&E_Specs_v2.2_CONFIDENT[1].pdf')
+Document.from_mupdf(r'C:\projects\fohlio\hotels\holiday inn\new\20200218_HI_BALWM_Public_Space_FF&E_Specs_v2.2_CONFIDENT[1].pdf')
