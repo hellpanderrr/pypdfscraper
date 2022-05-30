@@ -1,8 +1,73 @@
 import itertools
 from collections import defaultdict
-from typing import List, Tuple, Iterable
+from dataclasses import dataclass
+from typing import List, Tuple, Iterable, NamedTuple
 
 import fitz
+from pydantic import confloat
+
+
+@dataclass(frozen=True)
+class PageVerticalOrientation:
+    bottom_is_zero: bool
+    page_height: float
+
+
+@dataclass(frozen=True)
+class Color:
+    r: confloat(ge=0, le=1)
+    g: confloat(ge=0, le=1)
+    b: confloat(ge=0, le=1)
+
+    def __eq__(self, other, decimals=1):
+        if (
+                round(self.r, decimals) == round(other.r, decimals)
+                and round(self.b, decimals) == round(other.b, decimals)
+                and round(self.g, decimals) == round(other.g, decimals)
+        ):
+            return True
+        else:
+            return False
+
+
+class Bbox(NamedTuple):
+    """
+    A rectangular bounding box.
+    """
+
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+
+    def __str__(self):
+
+        return (
+            f"Bbox(x0={self.x0:.2f},y0={self.y0:.2f},x1={self.x1:.2f},y1={self.y1:.2f})"
+        )
+
+    def __eq__(self, other, decimals=1, n=4):
+        return [round(i, ndigits=decimals) for i in self[:n]] == [
+            round(i, ndigits=decimals) for i in other[:n]
+        ]
+
+    @property
+    def height(self):
+        return abs(self.y0 - self.y1)
+
+    @property
+    def width(self):
+        return abs(self.x0 - self.x1)
+
+    @classmethod
+    def from_coords(cls, coords, invert_y=False, page_height=None):
+        if invert_y:
+            x0, y0, x1, y1 = coords
+            y0, y1 = page_height - y1, page_height - y0
+            return cls(x0, y0, x1, y1)
+
+    def set_vertical_orientation(self, orientation: PageVerticalOrientation):
+        pass
 
 
 def get_bbox(block) -> Tuple[float, float, float, float]:
@@ -78,19 +143,7 @@ def group_objs_y(words: List,
     return total
 
 
-def move_bbox(obj: tuple, delta: float = 1000):
-    if not delta:
-        return obj
-    obj = list(obj)
-    obj[1] += delta
-    obj[3] += delta
-    return obj
 
-
-def move_rect(rect: fitz.fitz.Rect, delta: float):
-    rect.y0 += delta
-    rect.y1 += delta
-    return rect
 
 
 def get_center_group(group: List) -> float:
@@ -108,8 +161,6 @@ def get_center(obj) -> float:
     Get a middle point of a word.
     """
     return (obj.bbox.x0 + obj.bbox.x1) / 2
-
-
 
 
 def flatten(items):

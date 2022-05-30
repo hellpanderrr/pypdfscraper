@@ -3,7 +3,9 @@ import os
 import fitz
 from pdfminer.high_level import extract_pages
 
-from pdfscraper.layout import Page, PageVerticalOrientation, PDFMinerAnnotation, PyMuPDFAnnotation, Annotation
+from pdfscraper.layout.annotations import PDFMinerAnnotation, PyMuPDFAnnotation, Annotation
+from pdfscraper.page import Page
+from pdfscraper.layout.utils import PageVerticalOrientation
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -94,4 +96,4 @@ def test_annotations():
         anno1 = PyMuPDFAnnotation.from_annot(a1)
         anno2 = PDFMinerAnnotation.from_annot(a2)
         assert (Annotation.from_pymupdf_annot(anno1, orientation=orientation).content ==
-              Annotation.from_pdfminer_annot(anno2, orientation=orientation).content)
+                Annotation.from_pdfminer_annot(anno2, orientation=orientation).content)
