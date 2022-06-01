@@ -36,9 +36,6 @@
 <span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span>
 
-<span class="kn">import</span> <span class="nn">fitz</span>
-<span class="kn">import</span> <span class="nn">pdfminer</span>
-
 <span class="kn">from</span> <span class="nn">pdfscraper.page</span> <span class="kn">import</span> <span class="n">Page</span>
 
 
@@ -50,12 +47,14 @@
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Document.from_mupdf"><a class="viewcode-back" href="../../autoapi/pdfscraper/document/index.html#pdfscraper.document.Document.from_mupdf">[docs]</a>    <span class="k">def</span> <span class="nf">from_mupdf</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Document&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="kn">import</span> <span class="nn">fitz</span>
             <span class="n">doc</span> <span class="o">=</span> <span class="n">fitz</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">pages</span><span class="o">=</span><span class="p">[</span><span class="n">Page</span><span class="o">.</span><span class="n">from_mupdf</span><span class="p">(</span><span class="n">page</span><span class="p">)</span> <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">],</span> <span class="n">doc</span><span class="o">=</span><span class="n">doc</span><span class="p">)</span></div>
 
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Document.from_pdfminer"><a class="viewcode-back" href="../../autoapi/pdfscraper/document/index.html#pdfscraper.document.Document.from_pdfminer">[docs]</a>    <span class="k">def</span> <span class="nf">from_pdfminer</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Document&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="kn">import</span> <span class="nn">pdfminer</span>
             <span class="n">pages</span> <span class="o">=</span> <span class="n">pdfminer</span><span class="o">.</span><span class="n">high_level</span><span class="o">.</span><span class="n">extract_pages</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">cls</span><span class="p">([</span><span class="n">Page</span><span class="o">.</span><span class="n">from_pdfminer</span><span class="p">(</span><span class="n">page</span><span class="p">)</span> <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pages</span><span class="p">],</span> <span class="n">doc</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div>
 

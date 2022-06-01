@@ -40,7 +40,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api.html#main-interface">Main Interface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#modules">Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#modules1">Modules1</a></li>
 </ul>
 </li>
 </ul>
@@ -56,6 +56,154 @@
 </tr>
 </tbody>
 </table>
+<dl class="py class">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.image.</span></span><span class="sig-name descname"><span class="pre">Image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colorspace_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bpc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_object</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_object</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colorspace_n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image" title="Permalink to this definition">¶</a></dt>
+<dd><p>An image created from pdfminer or pymupdf object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bbox</strong> (<a class="reference internal" href="autoapi/pdfscraper/layout/utils/index.html#pdfscraper.layout.utils.Bbox" title="pdfscraper.layout.utils.Bbox"><em>Bbox</em></a>) – </p></li>
+<li><p><strong>width</strong> (<em>float</em>) – </p></li>
+<li><p><strong>height</strong> (<em>float</em>) – </p></li>
+<li><p><strong>source_width</strong> (<em>float</em>) – </p></li>
+<li><p><strong>source_height</strong> (<em>float</em>) – </p></li>
+<li><p><strong>colorspace_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>bpc</strong> (<em>int</em>) – </p></li>
+<li><p><strong>xref</strong> (<em>int</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>source</strong> (<em>Literal</em><em>[</em><em>'pdfminer'</em><em>, </em><em>'mupdf'</em><em>]</em>) – </p></li>
+<li><p><strong>raw_object</strong> (<em>Any</em>) – </p></li>
+<li><p><strong>parent_object</strong> (<em>Any</em>) – </p></li>
+<li><p><strong>colorspace_n</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.Config">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Config</span></span><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.Config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.Config" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.Config.arbitrary_types_allowed">
+<span class="sig-name descname"><span class="pre">arbitrary_types_allowed</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.Config.arbitrary_types_allowed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.Config.arbitrary_types_allowed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.bbox">
+<span class="sig-name descname"><span class="pre">bbox</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="autoapi/pdfscraper/layout/utils/index.html#pdfscraper.layout.utils.Bbox" title="pdfscraper.layout.utils.Bbox"><span class="pre">Bbox</span></a></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.bbox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.bbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>bbo</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.bpc">
+<span class="sig-name descname"><span class="pre">bpc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.bpc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.bpc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.colorspace_n">
+<span class="sig-name descname"><span class="pre">colorspace_n</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.colorspace_n"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.colorspace_n" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.colorspace_name">
+<span class="sig-name descname"><span class="pre">colorspace_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.colorspace_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.colorspace_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.from_mupdf">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_mupdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.from_mupdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.from_mupdf" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>Dict</em>) – </p></li>
+<li><p><strong>doc</strong> (<em>Document</em>) – </p></li>
+<li><p><strong>orientation</strong> (<a class="reference internal" href="autoapi/pdfscraper/layout/utils/index.html#pdfscraper.layout.utils.PageVerticalOrientation" title="pdfscraper.layout.utils.PageVerticalOrientation"><em>PageVerticalOrientation</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#pdfscraper.layout.image.Image" title="pdfscraper.layout.image.Image"><em>Image</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.from_pdfminer">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_pdfminer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.from_pdfminer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.from_pdfminer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an image out of pdfminer object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>LTImage</em>) – pdfminer LTImage object.</p></li>
+<li><p><strong>orientation</strong> (<a class="reference internal" href="autoapi/pdfscraper/layout/utils/index.html#pdfscraper.layout.utils.PageVerticalOrientation" title="pdfscraper.layout.utils.PageVerticalOrientation"><em>PageVerticalOrientation</em></a>) – page vertical orientation data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pdfscraper.layout.image.Image" title="pdfscraper.layout.image.Image"><em>Image</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.height">
+<span class="sig-name descname"><span class="pre">height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.height"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.height" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.parent_object">
+<span class="sig-name descname"><span class="pre">parent_object</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.parent_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.parent_object" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.raw_object">
+<span class="sig-name descname"><span class="pre">raw_object</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.raw_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.raw_object" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.save" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.source">
+<span class="sig-name descname"><span class="pre">source</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'pdfminer'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'mupdf'</span></span><span class="p"><span class="pre">]</span></span></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.source"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.source" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.source_height">
+<span class="sig-name descname"><span class="pre">source_height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.source_height"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.source_height" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.source_width">
+<span class="sig-name descname"><span class="pre">source_width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.source_width"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.source_width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.width">
+<span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.width"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.image.Image.xref">
+<span class="sig-name descname"><span class="pre">xref</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="_modules/pdfscraper/layout/image.html#Image.xref"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.xref" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading">¶</a></h1>

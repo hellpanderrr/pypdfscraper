@@ -45,7 +45,7 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pdfscraper.layout.image.Image" title="pdfscraper.layout.image.Image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Image</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../../../index.html#pdfscraper.layout.image.Image" title="pdfscraper.layout.image.Image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Image</span></code></a></p></td>
 <td><p>An image created from pdfminer or pymupdf object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#pdfscraper.layout.image.MuPDFImage" title="pdfscraper.layout.image.MuPDFImage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MuPDFImage</span></code></a></p></td>
@@ -119,6 +119,25 @@
 <dt class="sig sig-object py" id="pdfscraper.layout.image.Image">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.image.</span></span><span class="sig-name descname"><span class="pre">Image</span></span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/image.html#Image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image" title="Permalink to this definition">¶</a></dt>
 <dd><p>An image created from pdfminer or pymupdf object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bbox</strong> (<a class="reference internal" href="../utils/index.html#pdfscraper.layout.utils.Bbox" title="pdfscraper.layout.utils.Bbox"><em>Bbox</em></a>) – </p></li>
+<li><p><strong>width</strong> (<em>float</em>) – </p></li>
+<li><p><strong>height</strong> (<em>float</em>) – </p></li>
+<li><p><strong>source_width</strong> (<em>float</em>) – </p></li>
+<li><p><strong>source_height</strong> (<em>float</em>) – </p></li>
+<li><p><strong>colorspace_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>bpc</strong> (<em>int</em>) – </p></li>
+<li><p><strong>xref</strong> (<em>int</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>source</strong> (<em>Literal</em><em>[</em><em>'pdfminer'</em><em>, </em><em>'mupdf'</em><em>]</em>) – </p></li>
+<li><p><strong>raw_object</strong> (<em>Any</em>) – </p></li>
+<li><p><strong>parent_object</strong> (<em>Any</em>) – </p></li>
+<li><p><strong>colorspace_n</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py class">
 <dt class="sig sig-object py" id="pdfscraper.layout.image.Image.Config">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Config</span></span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/image.html#Image.Config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.image.Image.Config" title="Permalink to this definition">¶</a></dt>
@@ -231,15 +250,15 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>image</strong> (<em>pdfminer.layout.LTImage</em>) – pdfminer LTImage object.</p></li>
-<li><p><strong>orientation</strong> (<a class="reference internal" href="../utils/index.html#pdfscraper.layout.utils.PageVerticalOrientation" title="pdfscraper.layout.utils.PageVerticalOrientation"><em>pdfscraper.layout.utils.PageVerticalOrientation</em></a>) – page vertical orientation data.</p></li>
+<li><p><strong>image</strong> (<em>LTImage</em>) – pdfminer LTImage object.</p></li>
+<li><p><strong>orientation</strong> (<a class="reference internal" href="../utils/index.html#pdfscraper.layout.utils.PageVerticalOrientation" title="pdfscraper.layout.utils.PageVerticalOrientation"><em>PageVerticalOrientation</em></a>) – page vertical orientation data.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p></p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#pdfscraper.layout.image.Image" title="pdfscraper.layout.image.Image">Image</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="../../../../index.html#pdfscraper.layout.image.Image" title="pdfscraper.layout.image.Image"><em>Image</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -251,12 +270,12 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image</strong> (<em>Dict</em>) – </p></li>
-<li><p><strong>doc</strong> (<em>fitz.fitz.Document</em>) – </p></li>
-<li><p><strong>orientation</strong> (<a class="reference internal" href="../utils/index.html#pdfscraper.layout.utils.PageVerticalOrientation" title="pdfscraper.layout.utils.PageVerticalOrientation"><em>pdfscraper.layout.utils.PageVerticalOrientation</em></a>) – </p></li>
+<li><p><strong>doc</strong> (<em>Document</em>) – </p></li>
+<li><p><strong>orientation</strong> (<a class="reference internal" href="../utils/index.html#pdfscraper.layout.utils.PageVerticalOrientation" title="pdfscraper.layout.utils.PageVerticalOrientation"><em>PageVerticalOrientation</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#pdfscraper.layout.image.Image" title="pdfscraper.layout.image.Image">Image</a></p>
+<dd class="field-even"><p><a class="reference internal" href="../../../../index.html#pdfscraper.layout.image.Image" title="pdfscraper.layout.image.Image"><em>Image</em></a></p>
 </dd>
 </dl>
 </dd></dl>

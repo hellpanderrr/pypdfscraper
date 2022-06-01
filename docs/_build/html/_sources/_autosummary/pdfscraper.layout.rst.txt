@@ -1,6 +1,6 @@
 ﻿pdfscraper.layout
 =================
 
-.. currentmodule:: pdfscraper
+.. currentmodule:: pdfscraper.layout
 
-.. automodule:: layout
+.. automodule:: pdfscraper.layout

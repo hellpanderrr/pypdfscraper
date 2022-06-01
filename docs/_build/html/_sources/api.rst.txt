@@ -12,7 +12,7 @@ Main Interface
     :inherited-members:
     :undoc-members:
 
-Modules
+Modules1
 -------------------
 
 .. autoclass:: pdfscraper.layout.image.Image

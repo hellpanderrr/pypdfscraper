@@ -19,6 +19,11 @@ Welcome to pdfscraper's documentation!
 
    pdfscraper.layout
 
+.. autoclass:: pdfscraper.layout.image.Image
+    :members: 
+    :inherited-members:
+    :undoc-members:
+
 Indices and tables
 ==================
 

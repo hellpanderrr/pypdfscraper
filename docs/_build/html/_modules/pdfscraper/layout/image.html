@@ -33,10 +33,17 @@
           <div class="body" role="main">
             
   <h1>Source code for pdfscraper.layout.image</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypedDict</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Iterable</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">TypedDict</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">TypedDict</span>
 
 <span class="kn">import</span> <span class="nn">fitz</span>
 <span class="kn">import</span> <span class="nn">pdfminer</span>
@@ -66,28 +73,28 @@
 
 
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<div class="viewcode-block" id="Image"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image">[docs]</a><span class="k">class</span> <span class="nc">Image</span><span class="p">:</span>
+<div class="viewcode-block" id="Image"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image">[docs]</a><span class="k">class</span> <span class="nc">Image</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An image created from pdfminer or pymupdf object.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">#: bbo</span>
-<div class="viewcode-block" id="Image.bbox"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.bbox">[docs]</a>    <span class="n">bbox</span><span class="p">:</span> <span class="n">Bbox</span></div>
-<div class="viewcode-block" id="Image.width"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.width">[docs]</a>    <span class="n">width</span><span class="p">:</span> <span class="nb">float</span></div>
-<div class="viewcode-block" id="Image.height"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.height">[docs]</a>    <span class="n">height</span><span class="p">:</span> <span class="nb">float</span></div>
-<div class="viewcode-block" id="Image.source_width"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.source_width">[docs]</a>    <span class="n">source_width</span><span class="p">:</span> <span class="nb">float</span></div>
-<div class="viewcode-block" id="Image.source_height"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.source_height">[docs]</a>    <span class="n">source_height</span><span class="p">:</span> <span class="nb">float</span></div>
-<div class="viewcode-block" id="Image.colorspace_name"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.colorspace_name">[docs]</a>    <span class="n">colorspace_name</span><span class="p">:</span> <span class="nb">str</span></div>
-<div class="viewcode-block" id="Image.bpc"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.bpc">[docs]</a>    <span class="n">bpc</span><span class="p">:</span> <span class="nb">int</span></div>
-<div class="viewcode-block" id="Image.xref"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.xref">[docs]</a>    <span class="n">xref</span><span class="p">:</span> <span class="nb">int</span></div>
-<div class="viewcode-block" id="Image.name"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.name">[docs]</a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span></div>
-<div class="viewcode-block" id="Image.source"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.source">[docs]</a>    <span class="n">source</span><span class="p">:</span> <span class="n">ImageSource</span></div>
-<div class="viewcode-block" id="Image.raw_object"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.raw_object">[docs]</a>    <span class="n">raw_object</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span></div>
-<div class="viewcode-block" id="Image.parent_object"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.parent_object">[docs]</a>    <span class="n">parent_object</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span></div>
-<div class="viewcode-block" id="Image.colorspace_n"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.colorspace_n">[docs]</a>    <span class="n">colorspace_n</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+<div class="viewcode-block" id="Image.bbox"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.bbox">[docs]</a>    <span class="n">bbox</span><span class="p">:</span> <span class="n">Bbox</span></div>
+<div class="viewcode-block" id="Image.width"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.width">[docs]</a>    <span class="n">width</span><span class="p">:</span> <span class="nb">float</span></div>
+<div class="viewcode-block" id="Image.height"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.height">[docs]</a>    <span class="n">height</span><span class="p">:</span> <span class="nb">float</span></div>
+<div class="viewcode-block" id="Image.source_width"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.source_width">[docs]</a>    <span class="n">source_width</span><span class="p">:</span> <span class="nb">float</span></div>
+<div class="viewcode-block" id="Image.source_height"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.source_height">[docs]</a>    <span class="n">source_height</span><span class="p">:</span> <span class="nb">float</span></div>
+<div class="viewcode-block" id="Image.colorspace_name"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.colorspace_name">[docs]</a>    <span class="n">colorspace_name</span><span class="p">:</span> <span class="nb">str</span></div>
+<div class="viewcode-block" id="Image.bpc"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.bpc">[docs]</a>    <span class="n">bpc</span><span class="p">:</span> <span class="nb">int</span></div>
+<div class="viewcode-block" id="Image.xref"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.xref">[docs]</a>    <span class="n">xref</span><span class="p">:</span> <span class="nb">int</span></div>
+<div class="viewcode-block" id="Image.name"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.name">[docs]</a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span></div>
+<div class="viewcode-block" id="Image.source"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.source">[docs]</a>    <span class="n">source</span><span class="p">:</span> <span class="n">ImageSource</span></div>
+<div class="viewcode-block" id="Image.raw_object"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.raw_object">[docs]</a>    <span class="n">raw_object</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span></div>
+<div class="viewcode-block" id="Image.parent_object"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.parent_object">[docs]</a>    <span class="n">parent_object</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span></div>
+<div class="viewcode-block" id="Image.colorspace_n"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.colorspace_n">[docs]</a>    <span class="n">colorspace_n</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="Image.Config"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.Config">[docs]</a>    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
-<div class="viewcode-block" id="Image.Config.arbitrary_types_allowed"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.Config.arbitrary_types_allowed">[docs]</a>        <span class="n">arbitrary_types_allowed</span> <span class="o">=</span> <span class="kc">True</span></div></div>
+<div class="viewcode-block" id="Image.Config"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.Config">[docs]</a>    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<div class="viewcode-block" id="Image.Config.arbitrary_types_allowed"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.Config.arbitrary_types_allowed">[docs]</a>        <span class="n">arbitrary_types_allowed</span> <span class="o">=</span> <span class="kc">True</span></div></div>
 
 <div class="viewcode-block" id="Image._save_pdfminer"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image._save_pdfminer">[docs]</a>    <span class="k">def</span> <span class="nf">_save_pdfminer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">path</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -101,14 +108,14 @@
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_object</span><span class="o">.</span><span class="n">extract_image</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xref</span><span class="p">)[</span><span class="s2">&quot;image&quot;</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="Image.save"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="viewcode-block" id="Image.save"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;pdfminer&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_save_pdfminer</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;mupdf&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_save_mupdf</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
 
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Image.from_pdfminer"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.from_pdfminer">[docs]</a>    <span class="k">def</span> <span class="nf">from_pdfminer</span><span class="p">(</span>
+<div class="viewcode-block" id="Image.from_pdfminer"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.from_pdfminer">[docs]</a>    <span class="k">def</span> <span class="nf">from_pdfminer</span><span class="p">(</span>
             <span class="bp">cls</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">pdfminer</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">LTImage</span><span class="p">,</span> <span class="n">orientation</span><span class="p">:</span> <span class="n">PageVerticalOrientation</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Image&#39;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -154,7 +161,7 @@
         <span class="p">)</span></div>
 
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Image.from_mupdf"><a class="viewcode-back" href="../../../autoapi/pdfscraper/layout/image/index.html#pdfscraper.layout.image.Image.from_mupdf">[docs]</a>    <span class="k">def</span> <span class="nf">from_mupdf</span><span class="p">(</span>
+<div class="viewcode-block" id="Image.from_mupdf"><a class="viewcode-back" href="../../../index.html#pdfscraper.layout.image.Image.from_mupdf">[docs]</a>    <span class="k">def</span> <span class="nf">from_mupdf</span><span class="p">(</span>
             <span class="bp">cls</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">doc</span><span class="p">:</span> <span class="n">fitz</span><span class="o">.</span><span class="n">fitz</span><span class="o">.</span><span class="n">Document</span><span class="p">,</span> <span class="n">orientation</span><span class="p">:</span> <span class="n">PageVerticalOrientation</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Image&#39;</span><span class="p">:</span>
         <span class="n">bbox</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bbox&quot;</span><span class="p">)</span>
