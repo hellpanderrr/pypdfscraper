@@ -17,7 +17,7 @@ Welcome to pdfscraper's documentation!
    :template: custom-module-template.rst
    :recursive:
 
-   pdfscraper.layout
+   pdfscraper
 
 .. autoclass:: pdfscraper.layout.image.Image
     :members: 
