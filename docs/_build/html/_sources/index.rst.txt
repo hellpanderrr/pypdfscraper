@@ -1,16 +1,23 @@
-.. pypdfscraper documentation master file, created by
-   sphinx-quickstart on Thu May 19 20:24:59 2022.
+.. pdfscraper documentation master file, created by
+   sphinx-quickstart on Wed Jun  1 08:06:56 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pypdfscraper's documentation!
-========================================
+Welcome to pdfscraper's documentation!
+======================================
+
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
+   api
 
+.. autosummary::
+   :toctree: _autosummary
+   :template: custom-module-template.rst
+   :recursive:
+
+   pdfscraper.layout
 
 Indices and tables
 ==================

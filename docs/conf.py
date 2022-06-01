@@ -10,25 +10,32 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'pypdfscraper'
+project = 'pdfscraper'
 copyright = '2022, hellpanderrr'
 author = 'hellpanderrr'
 
+# The full version, including alpha/beta/rc tags
+release = '2022'
+autosummary_generate = True
 
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [
+extensions = ['sphinx.ext.autodoc','sphinx.ext.autosummary','sphinx.ext.coverage', 'sphinx.ext.napoleon','sphinx.ext.viewcode'
 ]
+extensions.append('autoapi.extension')
+autoapi_type = 'python'
+autoapi_dirs = ['../pdfscraper']
+autodoc_typehints = 'description'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -36,7 +43,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', '_templates','Thumbs.db', '.DS_Store']
 
 
 # -- Options for HTML output -------------------------------------------------
