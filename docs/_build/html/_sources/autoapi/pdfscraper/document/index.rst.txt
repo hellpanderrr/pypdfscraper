@@ -1,0 +1,43 @@
+:py:mod:`pdfscraper.document`
+=============================
+
+.. py:module:: pdfscraper.document
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   pdfscraper.document.Document
+
+
+
+
+.. py:class:: Document
+
+   .. py:attribute:: pages
+      :annotation: :List[pdfscraper.page.Page]
+
+      
+
+   .. py:attribute:: doc
+      :annotation: :Any
+
+      
+
+   .. py:method:: from_mupdf(cls, path)
+      :classmethod:
+
+
+   .. py:method:: from_pdfminer(cls, path)
+      :classmethod:
+
+
+   .. py:method:: create_sections(self)
+
+
+

@@ -1,0 +1,389 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>pdfscraper.layout.utils &#8212; pdfscraper 2022 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-pdfscraper.layout.utils">
+<span id="pdfscraper-layout-utils"></span><h1><a class="reference internal" href="#module-pdfscraper.layout.utils" title="pdfscraper.layout.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pdfscraper.layout.utils</span></code></a><a class="headerlink" href="#module-pdfscraper.layout.utils" title="Permalink to this heading">¶</a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading">¶</a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pdfscraper.layout.utils.PageVerticalOrientation" title="pdfscraper.layout.utils.PageVerticalOrientation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PageVerticalOrientation</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pdfscraper.layout.utils.Color" title="pdfscraper.layout.utils.Color"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Color</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pdfscraper.layout.utils.Bbox" title="pdfscraper.layout.utils.Bbox"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Bbox</span></code></a></p></td>
+<td><p>A rectangular bounding box.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pdfscraper.layout.utils.get_bbox" title="pdfscraper.layout.utils.get_bbox"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_bbox</span></code></a>(block)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pdfscraper.layout.utils.get_rightmost" title="pdfscraper.layout.utils.get_rightmost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_rightmost</span></code></a>(block)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pdfscraper.layout.utils.get_leftmost" title="pdfscraper.layout.utils.get_leftmost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_leftmost</span></code></a>(block)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pdfscraper.layout.utils.get_topmost" title="pdfscraper.layout.utils.get_topmost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_topmost</span></code></a>(block)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pdfscraper.layout.utils.get_bottommost" title="pdfscraper.layout.utils.get_bottommost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_bottommost</span></code></a>(block)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pdfscraper.layout.utils.group_objs_y" title="pdfscraper.layout.utils.group_objs_y"><code class="xref py py-obj docutils literal notranslate"><span class="pre">group_objs_y</span></code></a>(words, gap = 5, decimals = 1)</p></td>
+<td><p>Group words into vertically adjacent lines.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pdfscraper.layout.utils.get_center_group" title="pdfscraper.layout.utils.get_center_group"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_center_group</span></code></a>(group)</p></td>
+<td><p>Get a middle point of a group of words.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pdfscraper.layout.utils.get_center" title="pdfscraper.layout.utils.get_center"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_center</span></code></a>(obj)</p></td>
+<td><p>Get a middle point of a word.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pdfscraper.layout.utils.flatten" title="pdfscraper.layout.utils.flatten"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten</span></code></a>(items)</p></td>
+<td><p>Yield items from any nested iterable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pdfscraper.layout.utils.groupby_consec" title="pdfscraper.layout.utils.groupby_consec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">groupby_consec</span></code></a>(df, col)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.PageVerticalOrientation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.utils.</span></span><span class="sig-name descname"><span class="pre">PageVerticalOrientation</span></span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#PageVerticalOrientation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.PageVerticalOrientation" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.PageVerticalOrientation.bottom_is_zero">
+<span class="sig-name descname"><span class="pre">bottom_is_zero</span></span><em class="property"><span class="w"> </span><span class="pre">:bool</span></em><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#PageVerticalOrientation.bottom_is_zero"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.PageVerticalOrientation.bottom_is_zero" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.PageVerticalOrientation.page_height">
+<span class="sig-name descname"><span class="pre">page_height</span></span><em class="property"><span class="w"> </span><span class="pre">:float</span></em><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#PageVerticalOrientation.page_height"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.PageVerticalOrientation.page_height" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Color">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.utils.</span></span><span class="sig-name descname"><span class="pre">Color</span></span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Color"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Color" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Color.r">
+<span class="sig-name descname"><span class="pre">r</span></span><em class="property"><span class="w"> </span><span class="pre">:confloat(ge=0,</span> <span class="pre">le=1)</span></em><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Color.r"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Color.r" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Color.g">
+<span class="sig-name descname"><span class="pre">g</span></span><em class="property"><span class="w"> </span><span class="pre">:confloat(ge=0,</span> <span class="pre">le=1)</span></em><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Color.g"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Color.g" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Color.b">
+<span class="sig-name descname"><span class="pre">b</span></span><em class="property"><span class="w"> </span><span class="pre">:confloat(ge=0,</span> <span class="pre">le=1)</span></em><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Color.b"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Color.b" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Color.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Color.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Color.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Bbox">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.utils.</span></span><span class="sig-name descname"><span class="pre">Bbox</span></span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Bbox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Bbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
+<p>A rectangular bounding box.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Bbox.x0">
+<span class="sig-name descname"><span class="pre">x0</span></span><em class="property"><span class="w"> </span><span class="pre">:float</span></em><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Bbox.x0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Bbox.x0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Bbox.y0">
+<span class="sig-name descname"><span class="pre">y0</span></span><em class="property"><span class="w"> </span><span class="pre">:float</span></em><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Bbox.y0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Bbox.y0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Bbox.x1">
+<span class="sig-name descname"><span class="pre">x1</span></span><em class="property"><span class="w"> </span><span class="pre">:float</span></em><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Bbox.x1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Bbox.x1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Bbox.y1">
+<span class="sig-name descname"><span class="pre">y1</span></span><em class="property"><span class="w"> </span><span class="pre">:float</span></em><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Bbox.y1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Bbox.y1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Bbox.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Bbox.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Bbox.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return str(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Bbox.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Bbox.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Bbox.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Bbox.height">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">height</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Bbox.height"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Bbox.height" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Bbox.width">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">width</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Bbox.width"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Bbox.width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Bbox.from_coords">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Bbox.from_coords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Bbox.from_coords" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.Bbox.set_vertical_orientation">
+<span class="sig-name descname"><span class="pre">set_vertical_orientation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#Bbox.set_vertical_orientation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.Bbox.set_vertical_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>orientation</strong> (<a class="reference internal" href="#pdfscraper.layout.utils.PageVerticalOrientation" title="pdfscraper.layout.utils.PageVerticalOrientation"><em>PageVerticalOrientation</em></a>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.get_bbox">
+<span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.utils.</span></span><span class="sig-name descname"><span class="pre">get_bbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#get_bbox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.get_bbox" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[float, float, float, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.get_rightmost">
+<span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.utils.</span></span><span class="sig-name descname"><span class="pre">get_rightmost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#get_rightmost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.get_rightmost" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.get_leftmost">
+<span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.utils.</span></span><span class="sig-name descname"><span class="pre">get_leftmost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#get_leftmost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.get_leftmost" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.get_topmost">
+<span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.utils.</span></span><span class="sig-name descname"><span class="pre">get_topmost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#get_topmost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.get_topmost" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.get_bottommost">
+<span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.utils.</span></span><span class="sig-name descname"><span class="pre">get_bottommost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#get_bottommost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.get_bottommost" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.group_objs_y">
+<span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.utils.</span></span><span class="sig-name descname"><span class="pre">group_objs_y</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">words</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#group_objs_y"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.group_objs_y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Group words into vertically adjacent lines.</p>
+<p>First, create a dictionary with rounded y-coordinates as keys, and lists of words as values.
+Then merge together lists whose coordinate delta is &lt;= gap.</p>
+<p>&#64;param words: list of Words
+&#64;param gap: vertical delta between lines to be merged.
+&#64;param decimals: rounding precision.</p>
+<p>&#64;returns: vertically grouped lines, each line is sorted horizontally inside.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>words</strong> (<em>List</em>) – </p></li>
+<li><p><strong>gap</strong> (<em>float</em>) – </p></li>
+<li><p><strong>decimals</strong> (<em>int</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[List]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.get_center_group">
+<span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.utils.</span></span><span class="sig-name descname"><span class="pre">get_center_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#get_center_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.get_center_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a middle point of a group of words.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>group</strong> (<em>List</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.get_center">
+<span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.utils.</span></span><span class="sig-name descname"><span class="pre">get_center</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#get_center"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.get_center" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a middle point of a word.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.flatten">
+<span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.utils.</span></span><span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#flatten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.flatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield items from any nested iterable.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pdfscraper.layout.utils.groupby_consec">
+<span class="sig-prename descclassname"><span class="pre">pdfscraper.layout.utils.</span></span><span class="sig-name descname"><span class="pre">groupby_consec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pdfscraper/layout/utils.html#groupby_consec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pdfscraper.layout.utils.groupby_consec" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">pdfscraper</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api.html">API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_autosummary/pdfscraper.layout.html">pdfscraper.layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, hellpanderrr.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../../../_sources/autoapi/pdfscraper/layout/utils/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

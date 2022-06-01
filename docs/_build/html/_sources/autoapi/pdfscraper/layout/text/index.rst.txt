@@ -1,0 +1,134 @@
+:py:mod:`pdfscraper.layout.text`
+================================
+
+.. py:module:: pdfscraper.layout.text
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   pdfscraper.layout.text.Word
+   pdfscraper.layout.text.Span
+   pdfscraper.layout.text.Line
+   pdfscraper.layout.text.Block
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   pdfscraper.layout.text.process_span_fitz
+   pdfscraper.layout.text.process_span_pdfminer
+   pdfscraper.layout.text.get_span_bbox
+   pdfscraper.layout.text.line2str
+
+
+
+.. py:class:: Word(text = '', bbox = None, font = '', size = '', color=None, normalize_text=False)
+
+   A text string representing one word. It's generated from a line of text by splitting on a space.
+
+   .. py:attribute:: __slots__
+      :annotation: = ['text', 'bbox', 'font', 'size', 'color']
+
+      
+
+   .. py:method:: __hash__(self)
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__(self)
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(self, other)
+
+      Return self==value.
+
+
+   .. py:method:: __str__(self)
+
+      Return str(self).
+
+
+
+.. py:class:: Span(words = None, bbox = None)
+
+   .. py:attribute:: __slots__
+      :annotation: = ['words', 'bbox']
+
+      
+
+   .. py:method:: text(self)
+      :property:
+
+
+   .. py:method:: __repr__(self)
+
+      Return repr(self).
+
+
+
+.. py:class:: Line(bbox, spans)
+
+   .. py:attribute:: __slots__
+      :annotation: = ['bbox', 'spans']
+
+      
+
+   .. py:method:: __repr__(self)
+
+      Return repr(self).
+
+
+   .. py:method:: text(self)
+      :property:
+
+
+
+.. py:class:: Block(bbox, lines)
+
+   .. py:attribute:: __slots__
+      :annotation: = ['bbox', 'lines']
+
+      
+
+   .. py:method:: __repr__(self)
+
+      Return repr(self).
+
+
+
+.. py:function:: process_span_fitz(span, orientation)
+
+
+.. py:function:: process_span_pdfminer(span, orientation)
+
+   Convert a list of pdfminer characters into a Span.
+
+   Split a list by space into Words.
+
+   @param span: list of characters
+
+
+
+.. py:function:: get_span_bbox(span)
+
+   Calculate bounding box for a span.
+
+   :param span:
+   :return:
+
+
+.. py:function:: line2str(line)
+
+

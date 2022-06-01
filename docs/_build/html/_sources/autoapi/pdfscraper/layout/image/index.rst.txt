@@ -1,0 +1,214 @@
+:py:mod:`pdfscraper.layout.image`
+=================================
+
+.. py:module:: pdfscraper.layout.image
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   pdfscraper.layout.image.Image
+   pdfscraper.layout.image.MuPDFImage
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   pdfscraper.layout.image.get_image
+   pdfscraper.layout.image.attr_as
+   pdfscraper.layout.image.get_images_from_mupdf_page
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   pdfscraper.layout.image.ImageSource
+
+
+.. py:data:: ImageSource
+   
+
+   
+
+.. py:function:: get_image(layout_object)
+
+
+.. py:function:: attr_as(obj, field, value)
+
+
+.. py:class:: Image
+
+   An image created from pdfminer or pymupdf object.
+
+
+   .. py:class:: Config
+
+      .. py:attribute:: arbitrary_types_allowed
+         :annotation: = True
+
+         
+
+
+   .. py:attribute:: bbox
+      :annotation: :pdfscraper.layout.utils.Bbox
+
+      
+
+   .. py:attribute:: width
+      :annotation: :float
+
+      
+
+   .. py:attribute:: height
+      :annotation: :float
+
+      
+
+   .. py:attribute:: source_width
+      :annotation: :float
+
+      
+
+   .. py:attribute:: source_height
+      :annotation: :float
+
+      
+
+   .. py:attribute:: colorspace_name
+      :annotation: :str
+
+      
+
+   .. py:attribute:: bpc
+      :annotation: :int
+
+      
+
+   .. py:attribute:: xref
+      :annotation: :int
+
+      
+
+   .. py:attribute:: name
+      :annotation: :str
+
+      
+
+   .. py:attribute:: source
+      :annotation: :ImageSource
+
+      
+
+   .. py:attribute:: raw_object
+      :annotation: :Any
+
+      
+
+   .. py:attribute:: parent_object
+      :annotation: :Any
+
+      
+
+   .. py:attribute:: colorspace_n
+      :annotation: :Optional[int]
+
+      
+
+   .. py:method:: _save_pdfminer(self, path)
+
+
+   .. py:method:: _save_mupdf(self, path)
+
+
+   .. py:method:: save(self, path)
+
+
+   .. py:method:: from_pdfminer(cls, image, orientation)
+      :classmethod:
+
+      Create an image out of pdfminer object.
+
+      :param image: pdfminer LTImage object.
+      :param orientation: page vertical orientation data.
+      :return:
+
+
+   .. py:method:: from_mupdf(cls, image, doc, orientation)
+      :classmethod:
+
+
+
+.. py:class:: MuPDFImage
+
+   Bases: :py:obj:`TypedDict`
+
+   dict() -> new empty dictionary
+   dict(mapping) -> new dictionary initialized from a mapping object's
+       (key, value) pairs
+   dict(iterable) -> new dictionary initialized as if via:
+       d = {}
+       for k, v in iterable:
+           d[k] = v
+   dict(**kwargs) -> new dictionary initialized with the name=value pairs
+       in the keyword argument list.  For example:  dict(one=1, two=2)
+
+   .. py:attribute:: xref
+      :annotation: :int
+
+      
+
+   .. py:attribute:: mask_xref
+      :annotation: :int
+
+      
+
+   .. py:attribute:: source_width
+      :annotation: :int
+
+      
+
+   .. py:attribute:: source_height
+      :annotation: :int
+
+      
+
+   .. py:attribute:: bpc
+      :annotation: :int
+
+      
+
+   .. py:attribute:: colorspace_name
+      :annotation: :str
+
+      
+
+   .. py:attribute:: name
+      :annotation: :str
+
+      
+
+   .. py:attribute:: decode_filter
+      :annotation: :str
+
+      
+
+   .. py:attribute:: bbox
+      :annotation: :Tuple
+
+      
+
+
+.. py:function:: get_images_from_mupdf_page(page)
+
+

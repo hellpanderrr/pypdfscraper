@@ -1,0 +1,126 @@
+:py:mod:`pdfscraper.layout.drawing`
+===================================
+
+.. py:module:: pdfscraper.layout.drawing
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   pdfscraper.layout.drawing.Point
+   pdfscraper.layout.drawing.Drawing
+   pdfscraper.layout.drawing.RectShape
+   pdfscraper.layout.drawing.LineShape
+   pdfscraper.layout.drawing.CurveShape
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   pdfscraper.layout.drawing.get_pts
+   pdfscraper.layout.drawing.process_pdfminer_drawing
+   pdfscraper.layout.drawing.process_mupdf_drawing
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   pdfscraper.layout.drawing.Shape
+
+
+.. py:function:: get_pts(drawing)
+
+
+.. py:class:: Point
+
+   .. py:attribute:: x
+      :annotation: :float
+
+      
+
+   .. py:attribute:: y
+      :annotation: :float
+
+      
+
+
+.. py:class:: Drawing
+
+   .. py:attribute:: bbox
+      :annotation: :pdfscraper.layout.utils.Bbox
+
+      
+
+   .. py:attribute:: fill_color
+      :annotation: :Optional[pdfscraper.layout.utils.Color]
+
+      
+
+   .. py:attribute:: stroke_color
+      :annotation: :Optional[pdfscraper.layout.utils.Color]
+
+      
+
+   .. py:attribute:: fill
+      :annotation: :bool
+
+      
+
+   .. py:attribute:: stroke
+      :annotation: :bool
+
+      
+
+
+.. py:class:: RectShape
+
+   Bases: :py:obj:`Drawing`
+
+   .. py:attribute:: points
+      :annotation: :Optional[Tuple[Point, Point, Point, Point]]
+
+      
+
+
+.. py:class:: LineShape
+
+   Bases: :py:obj:`Drawing`
+
+   .. py:attribute:: points
+      :annotation: :Optional[Tuple[Point, Point]]
+
+      
+
+
+.. py:class:: CurveShape
+
+   Bases: :py:obj:`Drawing`
+
+   .. py:attribute:: points
+      :annotation: :Optional[Tuple[Point, Point, Point, Point]]
+
+      
+
+
+.. py:data:: Shape
+   
+
+   
+
+.. py:function:: process_pdfminer_drawing(drawing, orientation)
+
+
+.. py:function:: process_mupdf_drawing(drawing, orientation)
+
+

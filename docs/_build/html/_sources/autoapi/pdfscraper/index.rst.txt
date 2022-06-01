@@ -1,0 +1,25 @@
+:py:mod:`pdfscraper`
+====================
+
+.. py:module:: pdfscraper
+
+
+Subpackages
+-----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 3
+
+   layout/index.rst
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   document/index.rst
+   page/index.rst
+
+
