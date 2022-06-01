@@ -5,6 +5,7 @@ from typing import List, Callable, Union, Tuple
 
 import fitz
 import pdfminer
+import pdfminer.layout
 
 from pdfscraper.layout.drawing import Shape, process_mupdf_drawing, process_pdfminer_drawing
 from pdfscraper.layout.image import Image, get_images_from_mupdf_page, get_image

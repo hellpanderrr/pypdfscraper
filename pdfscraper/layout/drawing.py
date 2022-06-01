@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Optional, Dict, Tuple, List, TypeVar, Union
+from typing import Optional, Dict, Tuple, List,  Union
 
 import fitz
 import pdfminer
-
+import pdfminer.layout
 from pdfscraper.layout.utils import Color, Bbox
 
 

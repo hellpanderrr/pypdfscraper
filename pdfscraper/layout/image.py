@@ -1,10 +1,18 @@
+from __future__ import annotations
+
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Optional, Literal, Any, Dict, Tuple, TypedDict, Iterable
+from typing import Optional, Any, Dict, Tuple, Iterable
+
+try:
+    from typing import Literal, TypedDict
+except ImportError:
+    from typing_extensions import Literal, TypedDict
 
 import fitz
 import pdfminer
+import pdfminer.layout
 
 from pdfscraper.layout.utils import Bbox, PageVerticalOrientation
 
@@ -31,6 +39,11 @@ def attr_as(obj, field: str, value) -> None:
 
 @dataclass(frozen=True)
 class Image:
+    """
+    An image created from pdfminer or pymupdf object.
+
+    """
+    #: bbo
     bbox: Bbox
     width: float
     height: float
