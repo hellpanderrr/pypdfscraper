@@ -170,6 +170,7 @@ def get_bottommost(block) -> float:
     return max(y0, y1)
 
 
+
 def group_objs_y(words: List,
                  gap: float = 5,
                  decimals: int = 1) -> List[List]:
@@ -179,11 +180,11 @@ def group_objs_y(words: List,
     First, create a dictionary with rounded y-coordinates as keys, and lists of words as values.
     Then merge together lists whose coordinate delta is <= gap.
 
-    @param words: list of Words
-    @param gap: vertical delta between lines to be merged.
-    @param decimals: rounding precision.
+    :param words: list of Words
+    :param gap: vertical delta between lines to be merged.
+    :param decimals: rounding precision.
 
-    @returns: vertically grouped lines, each line is sorted horizontally inside.
+    :return: vertically grouped lines, each line is sorted horizontally inside.
 
     """
 
