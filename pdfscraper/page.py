@@ -9,8 +9,9 @@ import pdfminer.layout
 
 from pdfscraper.layout.drawing import Shape, process_mupdf_drawing, process_pdfminer_drawing
 from pdfscraper.layout.image import Image, get_images_from_mupdf_page, get_image
-from pdfscraper.layout.text import Word, Block, Line, process_span_fitz, process_span_pdfminer
-from pdfscraper.layout.utils import PageVerticalOrientation, Bbox, group_objs_y, get_topmost
+from pdfscraper.layout.text import Word, Block, Line, Span
+from pdfscraper.layout.utils import Bbox, group_objs_y, get_topmost
+from pdfscraper.layout.utils import PageOrientation
 
 
 class Page:
@@ -48,7 +49,6 @@ class Page:
         return success, failure
 
     def split(self, condition: Callable):
-
         words_true, words_false = self._split_sequence_by_condition(self.words, condition)
         drawings_true, drawings_false = self._split_sequence_by_condition(self.drawings, condition)
         images_true, images_false = self._split_sequence_by_condition(self.images, condition)
@@ -72,73 +72,90 @@ class Page:
         return group_objs_y(self.words)
 
     @classmethod
-    def from_mupdf(cls, page: fitz.fitz.Page) -> Page:
-        orientation = PageVerticalOrientation(
-            bottom_is_zero=False, page_height=Bbox(*page.rect).height
-        )
+    def from_mupdf(cls, page: fitz.fitz.Page, orientation: PageOrientation = None) -> Page:
+        if not orientation:
+            orientation = PageOrientation.create(bottom_is_zero=False, left_is_zero=True, page_width=page.rect.width,
+                                                 page_height=page.rect.height)
 
-        def _get_blocks_from_page(page):
+        def _get_words_blocks_from_page(page, page_orientation: PageOrientation):
             blocks = page.get_text("rawdict", flags=3)["blocks"]
             for block in blocks:
                 for line in block["lines"]:
                     for j, span in enumerate(line["spans"]):
-                        line["spans"][j] = process_span_fitz(span, orientation)
+                        line["spans"][j] = Span.from_mupdf(span, page_orientation)
             for block in blocks:
                 for k, line in enumerate(block["lines"]):
                     block["lines"][k] = Line(bbox=(line["bbox"]), spans=line["spans"])
 
             for n, block in enumerate(blocks):
                 blocks[n] = Block(bbox=(block["bbox"]), lines=block["lines"])
-            return blocks
+            words = [
+                word
+                for block in blocks
+                for line in block.lines
+                for span in line.spans
+                for word in span.words
+            ]
 
-        drawings = sorted(page.get_drawings(), key=lambda x: x["rect"][1])
-        drawings = [process_mupdf_drawing(i, orientation) for i in drawings]
-        drawings = sorted(drawings, key=get_topmost)
+            return words, blocks
 
-        blocks = _get_blocks_from_page(page)
-        words = [
-            word
-            for block in blocks
-            for line in block.lines
-            for span in line.spans
-            for word in span.words
-        ]
+        def _get_drawings_from_mupdf_page(page, page_orientation):
+            drawings = sorted(page.get_drawings(), key=lambda x: x["rect"][1])
+            drawings = [process_mupdf_drawing(i, page_orientation) for i in drawings]
+            drawings = sorted(drawings, key=get_topmost)
+            return drawings
 
-        images = get_images_from_mupdf_page(page)
-        images = [Image.from_mupdf(image, page.parent, orientation) for image in images]
-
+        drawings = _get_drawings_from_mupdf_page(page, orientation)
+        words, blocks = _get_words_blocks_from_page(page, orientation)  # type: ignore
+        mupdf_images = get_images_from_mupdf_page(page)
+        images = [Image.from_mupdf(image=image, doc=page.parent, orientation=orientation)
+                  for image in mupdf_images]
         page = cls(words=words, drawings=drawings, images=images, raw_object=page, blocks=blocks)
 
         return page
 
     @classmethod
-    def from_pdfminer(cls, page: pdfminer.layout.LTPage) -> Page:
-        blocks = []
-        text_boxes = [i for i in page if hasattr(i, "get_text")]
-        orientation = PageVerticalOrientation(
-            bottom_is_zero=False, page_height=page.height
-        )
-        for text_box in text_boxes:
-            # get text lines
-            lines = [
-                text_line for text_line in text_box if hasattr(text_line, "get_text")
-            ]
-            # convert lines into spans
-            lines = [
-                process_span_pdfminer([i for i in line if type(i) != pdfminer.layout.LTAnno], orientation)
-                for line in lines
-            ]
-            # make a block out of spans
-            blocks.append(Block(bbox=Bbox(*text_box.bbox), lines=lines))
-        words = [
-            word for block in blocks for line in block.lines for word in line.words
-        ]
-        drawings = [i for i in page if issubclass(type(i), pdfminer.layout.LTCurve)]
+    def from_pdfminer(cls, page: pdfminer.layout.LTPage, orientation: PageOrientation = None) -> Page:
 
-        drawings = [process_pdfminer_drawing(i, orientation) for i in drawings]
-        drawings = sorted(drawings, key=get_topmost)
-        images = filter(bool, map(get_image, page))
-        images = [Image.from_pdfminer(image, orientation) for image in images]
+        if not orientation:
+            orientation = PageOrientation.create(bottom_is_zero=False, left_is_zero=True, page_width=page.width,
+                                                 page_height=page.height)
+
+        def _get_words_blocks_from_page(page):
+            blocks = []
+            text_boxes = [i for i in page if hasattr(i, "get_text")]
+            for text_box in text_boxes:
+                # get text lines
+                lines = [
+                    text_line for text_line in text_box if hasattr(text_line, "get_text")
+                ]
+                # convert lines into spans
+                lines = [
+                    Span.from_pdfminer([i for i in line if type(i) != pdfminer.layout.LTAnno], orientation)
+                    for line in lines
+                ]
+                # make a block out of spans
+                blocks.append(Block(bbox=Bbox(*text_box.bbox), lines=lines))
+            words = [
+                word for block in blocks for line in block.lines for word in line.words
+            ]
+            return words, blocks
+
+        def _get_drawings_from_page(page):
+            drawings = [i for i in page if issubclass(type(i), pdfminer.layout.LTCurve)]
+            print(type(i) for i in drawings)
+            drawings = [process_pdfminer_drawing(i, orientation) for i in drawings]
+            drawings = sorted(drawings, key=get_topmost)
+            return drawings
+
+        def _get_images_from_page(page):
+            images = filter(bool, map(get_image, page))
+            images = [Image.from_pdfminer(image, orientation) for image in images]
+            return images
+
+        drawings = _get_drawings_from_page(page)
+        images = _get_images_from_page(page)
+        words, blocks = _get_words_blocks_from_page(page)
         page = cls(words=words, images=images, drawings=drawings, raw_object=page, blocks=blocks)
         return page
 

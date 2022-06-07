@@ -1,8 +1,11 @@
-from typing import Dict, List
 from dataclasses import dataclass
+from typing import Dict, List
+
+import fitz # type: ignore
 import pdfminer
-import fitz
-from .utils import Bbox
+
+from .utils import Bbox, DEFAULT_BACKEND_PAGE_ORIENTATIONS
+
 
 @dataclass
 class PyMuPDFAnnotation:
@@ -79,12 +82,14 @@ class PDFMinerAnnotation:
     def from_annot(cls, annot: Dict):
         subject = annot.get('Subj')
         flags = int(annot.get('F'))
+
+       #flags = int(flags) if flags else flags
         color = annot.get('C')
         creation_date = annot.get('CreationDate')
         mod_date = annot.get('M') or annot.get('ModDate')
         rect = pdfminer.pdftypes.resolve1(annot.get('Rect'))
         author = annot.get('T')
-        content = annot.get('Contents','')
+        content = annot.get('Contents', '')
         name = annot.get('NM')
         content, name, author, mod_date, creation_date, subject = [
             cls.normalize_value(i)
@@ -117,10 +122,14 @@ class Annotation:
         creation_date = annot.info.get('creationDate')
         mod_date = annot.info.get('modDate')
         subject = annot.info.get('subject')
-        if orientation.bottom_is_zero:
-            rect = Bbox.from_coords(*annot.rect, invert_y=True, page_height=orientation.page_height)
-        else:
-            rect = Bbox(*annot.rect)
+        bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].vertical_orientation.bottom_is_zero
+        left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].horizontal_orientation.left_is_zero
+
+        rect = Bbox.from_coords(coords=annot.rect,
+                                invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
+                                invert_x=orientation.left_is_zero ^ left_is_zero,
+                                page_height=orientation.page_height,
+                                page_width=orientation.page_width)
 
         return cls(content=content,
                    author=author,
@@ -130,14 +139,17 @@ class Annotation:
 
     @classmethod
     def from_pdfminer_annot(cls, annot, orientation):
-        if orientation.bottom_is_zero:
-            rect = Bbox(*annot.rect)
-        else:
-            rect = Bbox.from_coords(
-                coords=annot.rect, invert_y=True, page_height=orientation.page_height
-            )
+        bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].vertical_orientation.bottom_is_zero
+        left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].horizontal_orientation.left_is_zero
+
+        rect = Bbox.from_coords(coords=annot.rect,
+                                invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
+                                invert_x=orientation.left_is_zero ^ left_is_zero,
+                                page_height=orientation.page_height,
+                                page_width=orientation.page_width)
         return cls(content=annot.content,
                    author=annot.author,
                    mod_date=annot.mod_date,
                    creation_date=annot.creation_date,
                    rect=rect)
+

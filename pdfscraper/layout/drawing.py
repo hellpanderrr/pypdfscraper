@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Dict, Tuple, List,  Union
+from typing import Optional, Dict, Tuple, List, Union
 
 import fitz
 import pdfminer
 import pdfminer.layout
-from pdfscraper.layout.utils import Color, Bbox
+
+from pdfscraper.layout.utils import Color, Bbox, PageOrientation, DEFAULT_BACKEND_PAGE_ORIENTATIONS
 
 
 def get_pts(drawing: Dict) -> List:
@@ -50,12 +51,11 @@ class LineShape(Drawing):
 class CurveShape(Drawing):
     points: Optional[Tuple[Point, Point, Point, Point]]
 
-
 Shape = Union[LineShape, RectShape, CurveShape]
 
 
-def process_pdfminer_drawing(drawing: Union[pdfminer.layout.LTRect, pdfminer.layout.LTLine, pdfminer.layout.LTCurve],
-                             orientation) -> Shape:
+def process_pdfminer_drawing(drawing: Union['pdfminer.layout.LTRect', 'pdfminer.layout.LTLine', 'pdfminer.layout.LTCurve'],
+                             orientation: PageOrientation) -> Shape:
     fill = drawing.fill
     fill_color = None
     stroke_color = None
@@ -75,12 +75,15 @@ def process_pdfminer_drawing(drawing: Union[pdfminer.layout.LTRect, pdfminer.lay
             drawing.stroking_color *= 3
         stroke_color = Color(*drawing.stroking_color)
     # pdfminer has bottom as y-zero
-    if orientation.bottom_is_zero:
-        bbox = Bbox(*drawing.bbox)
-    else:
-        bbox = Bbox.from_coords(
-            coords=drawing.bbox, invert_y=True, page_height=orientation.page_height
-        )
+    bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].vertical_orientation.bottom_is_zero
+    left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].horizontal_orientation.left_is_zero
+
+    bbox = Bbox.from_coords(coords=drawing.bbox,
+                            invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
+                            invert_x=orientation.left_is_zero ^ left_is_zero,
+                            page_height=orientation.page_height,
+                            page_width=orientation.page_width)
+
     pts = None  # drawing.pts
     args = {
         "fill": fill,
@@ -98,19 +101,24 @@ def process_pdfminer_drawing(drawing: Union[pdfminer.layout.LTRect, pdfminer.lay
         return CurveShape(**args)
 
 
-def process_mupdf_drawing(drawing: Dict, orientation) -> Shape:
+
+
+def process_mupdf_drawing(drawing: Dict, orientation: PageOrientation) -> Shape:
     items = drawing["items"]
     fill = "f" in drawing["type"]
     fill_color = Color(*drawing["fill"]) if fill else None
     stroke = "s" in drawing["type"]
     stroke_color = Color(*drawing["color"]) if stroke else None
     # mupdf has top as y-zero
-    if orientation.bottom_is_zero:
-        bbox = Bbox.from_coords(
-            coords=drawing["rect"], invert_y=True, page_height=orientation.page_height
-        )
-    else:
-        bbox = Bbox(*drawing["rect"])
+    bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].vertical_orientation.bottom_is_zero
+    left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].horizontal_orientation.left_is_zero
+
+    bbox = Bbox.from_coords(coords=drawing["rect"],
+                            invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
+                            invert_x=orientation.left_is_zero ^ left_is_zero,
+                            page_height=orientation.page_height,
+                            page_width=orientation.page_width)
+
     pts = None  # get_pts(drawing)
     args = {
         "fill": fill,

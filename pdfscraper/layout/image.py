@@ -3,34 +3,40 @@ from __future__ import annotations
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Optional, Any, Dict, Tuple, Iterable
+from typing import Optional, Any, Dict, Tuple, Iterable, Iterator
 
 try:
     from typing import Literal, TypedDict
 except ImportError:
-    from typing_extensions import Literal, TypedDict
+    from typing_extensions import Literal, TypedDict # type: ignore
 
-import fitz
+
+from typing import TYPE_CHECKING
+
+
+import fitz # type: ignore
 import pdfminer
 import pdfminer.layout
 
-from pdfscraper.layout.utils import Bbox, PageVerticalOrientation
+from pdfscraper.layout.utils import Bbox, PageOrientation, DEFAULT_BACKEND_PAGE_ORIENTATIONS
 
 ImageSource = Literal["pdfminer", "mupdf"]
 
 
-def get_image(layout_object) -> Optional[pdfminer.layout.LTImage]:
+def get_image(layout_object) -> Optional['pdfminer.layout.LTImage']:
     if isinstance(layout_object, pdfminer.layout.LTImage):
         return layout_object
     elif isinstance(layout_object, pdfminer.layout.LTContainer):
         for child in layout_object:
             return get_image(child)
+        else:
+            return None
     else:
         return None
 
 
 @contextmanager
-def attr_as(obj, field: str, value) -> None:
+def attr_as(obj, field: str, value) -> Iterator[None]:
     old_value = getattr(obj, field)
     setattr(obj, field, value)
     yield
@@ -43,16 +49,15 @@ class Image:
     An image created from pdfminer or pymupdf object.
 
     """
-    #: bbo
     bbox: Bbox
     width: float
     height: float
-    source_width: float
-    source_height: float
-    colorspace_name: str
-    bpc: int
-    xref: int
-    name: str
+    source_width: Optional[int]
+    source_height: Optional[int]
+    colorspace_name: Optional[str]
+    bpc: Optional[int]
+    xref: Optional[int]
+    name: Optional[str]
     source: ImageSource
     raw_object: Any = None
     parent_object: Any = None
@@ -62,12 +67,13 @@ class Image:
         arbitrary_types_allowed = True
 
     def _save_pdfminer(self, path: str):
+        from pdfminer.image import ImageWriter
         path, ext = os.path.splitext(path)
         path = os.path.abspath(path)
         folder, name = os.path.split(path)
         im = self.raw_object
         with attr_as(im, "name", name):
-            return pdfminer.image.ImageWriter(folder).export_image(im)
+            return ImageWriter(folder).export_image(im)
 
     def _save_mupdf(self, path: str):
         with open(path, "wb") as f:
@@ -81,27 +87,32 @@ class Image:
 
     @classmethod
     def from_pdfminer(
-            cls, image: pdfminer.layout.LTImage, orientation: PageVerticalOrientation
+            cls, image: 'pdfminer.layout.LTImage', orientation: PageOrientation
     ) -> 'Image':
         """
         Create an image out of pdfminer object.
 
         :param image: pdfminer LTImage object.
-        :param orientation: page vertical orientation data.
+        :param orientation: page orientation data.
         :return:
         """
-        if orientation.bottom_is_zero:
-            bbox = Bbox(*image.bbox)
-        else:
-            bbox = Bbox.from_coords(
-                coords=image.bbox, invert_y=True, page_height=orientation.page_height
-            )
+        from pdfminer.psparser import PSLiteral
+
+        bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].vertical_orientation.bottom_is_zero
+        left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].horizontal_orientation.left_is_zero
+
+        bbox = Bbox.from_coords(coords=image.bbox,
+                                invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
+                                invert_x=orientation.left_is_zero ^ left_is_zero,
+                                page_height=orientation.page_height,
+                                page_width=orientation.page_width)
+
         bpc = image.bits
         if hasattr(image.colorspace[0], "name"):
             colorspace_name = image.colorspace[0].name
         else:
             objs = image.colorspace[0].resolve()
-            if type(objs) == pdfminer.psparser.PSLiteral:
+            if type(objs) == PSLiteral:
                 colorspace_name = objs.name
             else:
                 colorspaces = [i for i in objs if hasattr(i, "name")]
@@ -127,15 +138,20 @@ class Image:
 
     @classmethod
     def from_mupdf(
-            cls, image: Dict, doc: fitz.fitz.Document, orientation: PageVerticalOrientation
+            cls, image: MuPDFImage, doc: 'fitz.fitz.Document', orientation: PageOrientation
     ) -> 'Image':
         bbox = image.get("bbox")
-        if orientation.bottom_is_zero:
-            bbox = Bbox.from_coords(
-                coords=bbox, invert_y=True, page_height=orientation.page_height
-            )
-        else:
-            bbox = Bbox(*bbox)
+
+        bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].vertical_orientation.bottom_is_zero
+        left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].horizontal_orientation.left_is_zero
+
+        bbox = Bbox.from_coords(coords=bbox,
+                                invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
+                                invert_x=orientation.left_is_zero ^ left_is_zero,
+                                page_height=orientation.page_height,
+                                page_width=orientation.page_width)
+
+
         bpc = image.get("bpc")
         colorspace_name = image.get("colorspace_name")
         name = image.get("name")

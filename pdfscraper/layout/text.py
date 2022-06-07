@@ -1,24 +1,19 @@
 # from __future__ import annotations
 
 import itertools
-from dataclasses import dataclass
 from typing import Union, List, Tuple
 
 import pdfminer
 import unicodedata
 from pdfminer.layout import LTRect
 
-from pdfscraper.layout.utils import Bbox
+from pdfscraper.layout.utils import Bbox, DEFAULT_BACKEND_PAGE_ORIENTATIONS
 from pdfscraper.layout.utils import (
     get_leftmost,
     get_rightmost,
     get_topmost,
     get_bottommost,
 )
-
-
-
-
 
 
 class Word:
@@ -77,6 +72,108 @@ class Span:
     def __repr__(self):
         return "Span <%s> %s" % ([round(i) for i in self.bbox], self.words)
 
+    @classmethod
+    def from_mupdf(cls, span: dict, orientation) -> 'Span':
+        words = [
+            list(g)
+            for k, g in (
+                itertools.groupby(span["chars"], key=lambda x: x["c"] not in (" ", "\xa0"))
+            )
+        ]
+        new_words = []
+        coords = []
+
+        for word in words:
+            x0, y0 = get_leftmost(word[0]["bbox"]), get_topmost(word[0]["bbox"])
+            x1, y1 = get_rightmost(word[-1]["bbox"]), get_bottommost(word[-1]["bbox"])
+
+            coords.append([x0, y0, x1, y1])
+            text = "".join([c["c"] for c in word])
+
+            # mupdf has top as zero and left as zero by default
+            bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].vertical_orientation.bottom_is_zero
+            left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].horizontal_orientation.left_is_zero
+
+            bbox = Bbox.from_coords((x0, y0, x1, y1),
+                                    invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
+                                    invert_x=orientation.left_is_zero ^ left_is_zero,
+                                    page_height=orientation.page_height,
+                                    page_width=orientation.page_width)
+
+            new_words.append(
+                Word(
+                    **{
+                        "text": text,
+                        "bbox": bbox,
+                        "font": span["font"],
+                        "size": span["size"],
+                        "color": span["color"],
+                    },
+                    normalize_text=True,
+                )
+            )
+        bbox = get_span_bbox(new_words)
+        return cls(words=new_words, bbox=bbox)
+
+    @classmethod
+    def from_pdfminer(cls,
+                      span: List[pdfminer.layout.LTChar], orientation
+                      ) -> 'Span':
+        """
+        Convert a list of pdfminer characters into a Span.
+
+        Split a list by space into Words.
+
+        @param span: list of characters
+
+        """
+        words = [
+            list(g)
+            for k, g in (
+                itertools.groupby(span, key=lambda x: x.get_text() not in (" ", "\xa0"))
+            )
+        ]
+        new_words = []
+        coords = []
+
+        for word in words:
+            if type(word) == pdfminer.layout.LTAnno:
+                continue
+            # reversing y-coordinates: in pdfminer the zero is the bottom of the page
+            # make it top
+            x0, y0 = word[0].x0, word[0].y0
+            x1, y1 = word[-1].x1, word[-1].y1
+
+            coords.append([x0, y0, x1, y1])
+            text = "".join([c.get_text() for c in word])
+            font = word[0].fontname
+            size = word[0].size
+
+            bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].vertical_orientation.bottom_is_zero
+            left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].horizontal_orientation.left_is_zero
+
+
+            bbox = Bbox.from_coords((x0, y0, x1, y1),
+                                    invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
+                                    invert_x=orientation.left_is_zero ^ left_is_zero,
+                                    page_height=orientation.page_height,
+                                    page_width=orientation.page_width)
+
+            new_words.append(
+                Word(
+                    **{
+                        "text": text,
+                        "bbox": bbox,
+                        "font": font,
+                        "size": size,
+                        "color": None,
+                    },
+                    normalize_text=True,
+                )
+            )
+        bbox = get_span_bbox(new_words)
+        return cls(words=new_words, bbox=bbox)
+
 
 class Line:
     __slots__ = ("bbox", "spans")
@@ -106,97 +203,6 @@ class Block:
 
     def __repr__(self):
         return "Block: %s" % self.lines
-
-
-def process_span_fitz(span: dict, orientation) -> Span:
-    words = [
-        list(g)
-        for k, g in (
-            itertools.groupby(span["chars"], key=lambda x: x["c"] not in (" ", "\xa0"))
-        )
-    ]
-    new_words = []
-    coords = []
-
-    for word in words:
-        x0, y0 = get_leftmost(word[0]["bbox"]), get_topmost(word[0]["bbox"])
-        x1, y1 = get_rightmost(word[-1]["bbox"]), get_bottommost(word[-1]["bbox"])
-
-        coords.append([x0, y0, x1, y1])
-        text = "".join([c["c"] for c in word])
-        if orientation.bottom_is_zero:
-            bbox = Bbox.from_coords((x0, y0, x1, y1), invert_y=True, page_height=orientation.page_height)
-        else:
-            bbox = Bbox(x0=x0, y0=y0, x1=x1, y1=y1)
-        new_words.append(
-            Word(
-                **{
-                    "text": text,
-                    "bbox": bbox,
-                    "font": span["font"],
-                    "size": span["size"],
-                    "color": span["color"],
-                },
-                normalize_text=True,
-            )
-        )
-    bbox = get_span_bbox(new_words)
-    ret = Span(words=new_words, bbox=bbox)
-    return ret
-
-
-def process_span_pdfminer(
-        span: List[pdfminer.layout.LTChar], orientation
-) -> Span:
-    """
-    Convert a list of pdfminer characters into a Span.
-
-    Split a list by space into Words.
-
-    @param span: list of characters
-
-    """
-    words = [
-        list(g)
-        for k, g in (
-            itertools.groupby(span, key=lambda x: x.get_text() not in (" ", "\xa0"))
-        )
-    ]
-    new_words = []
-    coords = []
-
-    for word in words:
-        if type(word) == pdfminer.layout.LTAnno:
-            continue
-        # reversing y-coordinates: in pdfminer the zero is the bottom of the page
-        # make it top
-        x0, y0 = word[0].x0, word[0].y0
-        x1, y1 = word[-1].x1, word[-1].y1
-
-        coords.append([x0, y0, x1, y1])
-        text = "".join([c.get_text() for c in word])
-        font = word[0].fontname
-        size = word[0].size
-        if not orientation.bottom_is_zero:
-            bbox = Bbox.from_coords(coords=(x0, y0, x1, y1), invert_y=True, page_height=orientation.page_height)
-        else:
-            bbox = Bbox(x0=x0, y0=y0, x1=x1, y1=y1)
-
-        new_words.append(
-            Word(
-                **{
-                    "text": text,
-                    "bbox": bbox,
-                    "font": font,
-                    "size": size,
-                    "color": None,
-                },
-                normalize_text=True,
-            )
-        )
-    bbox = get_span_bbox(new_words)
-    ret = Span(words=new_words, bbox=bbox)
-    return ret
 
 
 def get_span_bbox(span: List) -> Bbox:

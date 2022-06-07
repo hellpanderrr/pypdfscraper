@@ -1,23 +1,90 @@
 import itertools
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Tuple, Iterable, NamedTuple
+from typing import List, Tuple, Iterable, NamedTuple, Dict
 
-import fitz
-from pydantic import confloat
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 
 @dataclass(frozen=True)
-class PageVerticalOrientation:
+class VerticalOrientation:
+    """
+    Direction of a Y-axis. Bottom→Top or Top→Bottom.
+    """
     bottom_is_zero: bool
+
+
+@dataclass(frozen=True)
+class HorizontalOrientation:
+    """
+    Direction of a X-axis. Left→Right or Right→Left.
+    """
+    left_is_zero: bool
+
+
+@dataclass(frozen=True)
+class Orientation:
+    """
+    Directions of X and Y axes.
+    """
+    vertical_orientation: VerticalOrientation
+    horizontal_orientation: HorizontalOrientation
+
+    @classmethod
+    def create(cls, left_is_zero=True, bottom_is_zero=False):
+        return cls(horizontal_orientation=HorizontalOrientation(left_is_zero=left_is_zero),
+                   vertical_orientation=VerticalOrientation(bottom_is_zero=bottom_is_zero))
+
+
+@dataclass(frozen=True)
+class PageOrientation:
+    """
+    Directions of X/Y axes together with page dimensions.
+    """
+    orientation: Orientation
     page_height: float
+    page_width: float
+
+    @property
+    def left_is_zero(self):
+        return self.orientation.horizontal_orientation.left_is_zero
+
+    @property
+    def bottom_is_zero(self):
+        return self.orientation.vertical_orientation.bottom_is_zero
+
+    @classmethod
+    def create(cls, left_is_zero=True, bottom_is_zero=False, page_width=None, page_height=None):
+        orientation = Orientation(horizontal_orientation=HorizontalOrientation(left_is_zero=left_is_zero),
+                                  vertical_orientation=VerticalOrientation(bottom_is_zero=bottom_is_zero))
+        return cls(orientation=orientation, page_height=page_height, page_width=page_width)
+
+Backend = Literal['pdfminer', 'mupdf']
+
+DEFAULT_BACKEND_PAGE_ORIENTATIONS: Dict[Backend, Orientation] = {
+    'pdfminer': Orientation.create(bottom_is_zero=True, left_is_zero=True),
+    'mupdf': Orientation.create(bottom_is_zero=False, left_is_zero=True)}
+
+
+def create_bbox_backend(backend: Backend, coords, orientation):
+    bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[backend].vertical_orientation.bottom_is_zero
+    left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[backend].horizontal_orientation.left_is_zero
+
+    return Bbox.from_coords(coords=coords,
+                            invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
+                            invert_x=orientation.left_is_zero ^ left_is_zero,
+                            page_height=orientation.page_height,
+                            page_width=orientation.page_width)
 
 
 @dataclass(frozen=True)
 class Color:
-    r: confloat(ge=0, le=1)
-    g: confloat(ge=0, le=1)
-    b: confloat(ge=0, le=1)
+    r: float
+    g: float
+    b: float
 
     def __eq__(self, other, decimals=1):
         if (
@@ -41,7 +108,6 @@ class Bbox(NamedTuple):
     y1: float
 
     def __str__(self):
-
         return (
             f"Bbox(x0={self.x0:.2f},y0={self.y0:.2f},x1={self.x1:.2f},y1={self.y1:.2f})"
         )
@@ -60,13 +126,16 @@ class Bbox(NamedTuple):
         return abs(self.x0 - self.x1)
 
     @classmethod
-    def from_coords(cls, coords, invert_y=False, page_height=None):
-        if invert_y:
-            x0, y0, x1, y1 = coords
-            y0, y1 = page_height - y1, page_height - y0
-            return cls(x0, y0, x1, y1)
+    def from_coords(cls, coords, invert_y=False, invert_x=False, page_height=None, page_width=None) -> 'Bbox':
+        x0, y0, x1, y1 = coords
 
-    def set_vertical_orientation(self, orientation: PageVerticalOrientation):
+        if invert_y:
+            y0, y1 = page_height - y1, page_height - y0
+        if invert_x:
+            x0, x1 = page_width - x1, page_width - x0
+        return cls(x0, y0, x1, y1)
+
+    def set_vertical_orientation(self, orientation: PageOrientation):
         pass
 
 
@@ -141,9 +210,6 @@ def group_objs_y(words: List,
     # sort every line horizontally
     total = [sorted(i, key=lambda x: get_leftmost(x)) for i in total]
     return total
-
-
-
 
 
 def get_center_group(group: List) -> float:
