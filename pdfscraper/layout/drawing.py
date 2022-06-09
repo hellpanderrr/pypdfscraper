@@ -3,14 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, Dict, Tuple, List, Union
 
-import fitz
-import pdfminer
-import pdfminer.layout
 
 from pdfscraper.layout.utils import Color, Bbox, PageOrientation, create_bbox_backend, Backend
 
 
 def get_pts(drawing: Dict) -> List:
+    import fitz
     ret = []
     for i in drawing["items"]:
         for j in i[1:]:
@@ -88,6 +86,7 @@ def process_pdfminer_drawing(
         "bbox": bbox,
         "points": pts,
     }
+    import pdfminer
     if isinstance(drawing, pdfminer.layout.LTRect):
         return RectShape(**args)
     elif isinstance(drawing, pdfminer.layout.LTLine):

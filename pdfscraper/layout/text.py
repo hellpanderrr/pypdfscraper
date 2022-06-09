@@ -3,9 +3,7 @@
 import itertools
 from typing import Union, List, Tuple
 
-import pdfminer
 import unicodedata
-from pdfminer.layout import LTRect
 
 from pdfscraper.layout.utils import Bbox, create_bbox_backend, Backend
 from pdfscraper.layout.utils import (
@@ -110,7 +108,7 @@ class Span:
 
     @classmethod
     def from_pdfminer(cls,
-                      span: List[pdfminer.layout.LTChar], orientation
+                      span: List['pdfminer.layout.LTChar'], orientation
                       ) -> 'Span':
         """
         Convert a list of pdfminer characters into a Span.
@@ -120,6 +118,7 @@ class Span:
         @param span: list of characters
 
         """
+        import pdfminer
         words = [
             list(g)
             for k, g in (

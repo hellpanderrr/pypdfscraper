@@ -1,8 +1,8 @@
 import os
 
 import fitz
-from pdfminer.high_level import extract_pages
-
+import pdfminer
+import pdfminer.high_level
 from pdfscraper.layout.annotations import PDFMinerAnnotation, PyMuPDFAnnotation, Annotation
 from pdfscraper.layout.utils import PageOrientation
 from pdfscraper.page import Page
@@ -14,7 +14,7 @@ def test_drawings():
     test_path = os.path.join(HERE, 'samples', 'test2.pdf')
     doc = fitz.open(test_path)
     fitz_page = doc[0]
-    pdfminer_page = list(extract_pages(test_path))[0]
+    pdfminer_page = list(pdfminer.high_level.extract_pages(test_path))[0]
     for mupdf_drawing, pdfminer_drawing in zip(Page.from_pymupdf(fitz_page).drawings,
                                                Page.from_pdfminer(pdfminer_page).drawings):
         assert mupdf_drawing.fill_color == pdfminer_drawing.fill_color
@@ -26,7 +26,7 @@ def test_images():
     test_path = os.path.join(HERE, 'samples', 'test2.pdf')
     doc = fitz.open(test_path)
     fitz_page = doc[0]
-    pdfminer_page = list(extract_pages(test_path))[0]
+    pdfminer_page = list(pdfminer.high_level.extract_pages(test_path))[0]
     for mupdf_drawing, pdfminer_drawing in zip(Page.from_pymupdf(fitz_page).images,
                                                Page.from_pdfminer(pdfminer_page).images):
         assert mupdf_drawing.bbox == pdfminer_drawing.bbox
@@ -44,7 +44,7 @@ def test_images_saving():
     test_path = os.path.join(HERE, 'samples', 'test2.pdf')
     doc = fitz.open(test_path)
     fitz_page = doc[0]
-    pdfminer_page = list(extract_pages(test_path))[0]
+    pdfminer_page = list(pdfminer.high_level.extract_pages(test_path))[0]
     for mupdf_image, pdfminer_image in zip(Page.from_pymupdf(fitz_page).images,
                                            Page.from_pdfminer(pdfminer_page).images):
         mupdf_image.save('test.png')
@@ -55,7 +55,7 @@ def test_text():
     test_path = os.path.join(HERE, 'samples', 'words_test.pdf')
     doc = fitz.open(test_path)
     fitz_page = doc[0]
-    pages = extract_pages(test_path)
+    pages = pdfminer.high_level.extract_pages(test_path)
     pdfminer_page = next(pages)
     for mupdf_line, pdfminer_line in zip(Page.from_pymupdf(fitz_page).sorted,
                                          Page.from_pdfminer(pdfminer_page).sorted):

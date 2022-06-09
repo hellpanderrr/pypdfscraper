@@ -2,9 +2,8 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 import fitz  # type: ignore
-import pdfminer
 
-from .utils import Bbox, create_bbox_backend, Backend
+from .utils import Bbox, create_bbox_backend, Backend, PageOrientation
 
 
 @dataclass
@@ -26,7 +25,7 @@ class PyMuPDFAnnotation:
     xref: int
 
     @classmethod
-    def from_annot(cls, annot: fitz.fitz.Annot):
+    def from_annot(cls, annot: 'fitz.fitz.Annot'):
         border = annot.border
         colors = annot.colors
         flags = annot.flags
@@ -71,11 +70,12 @@ class PDFMinerAnnotation:
     author: str
     rect: List
     content: str
+    import pdfminer
 
-    @staticmethod
-    def normalize_value(s):
+    @classmethod
+    def normalize_value(cls, s):
         if s:
-            return pdfminer.utils.decode_text(s)
+            return cls.pdfminer.utils.decode_text(s)
         return s
 
     @classmethod
@@ -87,7 +87,7 @@ class PDFMinerAnnotation:
         color = annot.get('C')
         creation_date = annot.get('CreationDate')
         mod_date = annot.get('M') or annot.get('ModDate')
-        rect = pdfminer.pdftypes.resolve1(annot.get('Rect'))
+        rect = cls.pdfminer.pdftypes.resolve1(annot.get('Rect'))
         author = annot.get('T')
         content = annot.get('Contents', '')
         name = annot.get('NM')
@@ -115,7 +115,7 @@ class Annotation:
     rect: Bbox
 
     @classmethod
-    def from_pymupdf_annot(cls, annot, orientation):
+    def from_pymupdf_annot(cls, annot: PyMuPDFAnnotation, orientation: PageOrientation):
         content = annot.info.get('content')
         author = annot.info.get('title')
         name = annot.info.get('id')
@@ -132,7 +132,7 @@ class Annotation:
                    rect=rect)
 
     @classmethod
-    def from_pdfminer_annot(cls, annot, orientation):
+    def from_pdfminer_annot(cls, annot: PDFMinerAnnotation, orientation: PageOrientation):
         rect = create_bbox_backend(backend=Backend.PDFMINER, coords=annot.rect, orientation=orientation)
 
         return cls(content=annot.content,

@@ -64,6 +64,48 @@ class PageOrientation:
         return cls(orientation=orientation, page_height=page_height, page_width=page_width)
 
 
+class Bbox(NamedTuple):
+    """
+    A rectangular bounding box.
+    """
+
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+
+    def __str__(self) -> str:
+        return (
+            f"Bbox(x0={self.x0:.2f},y0={self.y0:.2f},x1={self.x1:.2f},y1={self.y1:.2f})"
+        )
+
+    def __eq__(self, other, decimals=1, n=4) -> bool:
+        return [round(i, ndigits=decimals) for i in self[:n]] == [
+            round(i, ndigits=decimals) for i in other[:n]
+        ]
+
+    @property
+    def height(self) -> float:
+        return abs(self.y0 - self.y1)
+
+    @property
+    def width(self) -> float:
+        return abs(self.x0 - self.x1)
+
+    @classmethod
+    def from_coords(cls, coords, invert_y=False, invert_x=False, page_height=None, page_width=None) -> 'Bbox':
+        x0, y0, x1, y1 = coords
+
+        if invert_y:
+            y0, y1 = page_height - y1, page_height - y0
+        if invert_x:
+            x0, x1 = page_width - x1, page_width - x0
+        return cls(x0, y0, x1, y1)
+
+    def set_vertical_orientation(self, orientation: PageOrientation):
+        pass
+
+
 class Backend(Enum):
     PDFMINER = 'pdfminer'
     PYMUPDF = 'pymupdf'
@@ -74,7 +116,15 @@ DEFAULT_BACKEND_PAGE_ORIENTATIONS: Dict[Literal[Backend.PDFMINER, Backend.PYMUPD
     Backend.PYMUPDF: Orientation.create(bottom_is_zero=False, left_is_zero=True)}
 
 
-def create_bbox_backend(backend: Backend, coords, orientation: PageOrientation):
+def create_bbox_backend(backend: Backend, coords, orientation: PageOrientation) -> Bbox:
+    """
+    Creates a bbox taking into account axis direction from a given page.
+
+    :param backend: backend type
+    :param coords: 4-item sequence of x0,y0,x1,y1 coordinates
+    :param orientation: page size together with X/Y axes directions.
+    :return: a bounding box
+    """
     bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[backend].vertical_orientation.bottom_is_zero
     left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[backend].horizontal_orientation.left_is_zero
 
@@ -100,48 +150,6 @@ class Color:
             return True
         else:
             return False
-
-
-class Bbox(NamedTuple):
-    """
-    A rectangular bounding box.
-    """
-
-    x0: float
-    y0: float
-    x1: float
-    y1: float
-
-    def __str__(self):
-        return (
-            f"Bbox(x0={self.x0:.2f},y0={self.y0:.2f},x1={self.x1:.2f},y1={self.y1:.2f})"
-        )
-
-    def __eq__(self, other, decimals=1, n=4):
-        return [round(i, ndigits=decimals) for i in self[:n]] == [
-            round(i, ndigits=decimals) for i in other[:n]
-        ]
-
-    @property
-    def height(self):
-        return abs(self.y0 - self.y1)
-
-    @property
-    def width(self):
-        return abs(self.x0 - self.x1)
-
-    @classmethod
-    def from_coords(cls, coords, invert_y=False, invert_x=False, page_height=None, page_width=None) -> 'Bbox':
-        x0, y0, x1, y1 = coords
-
-        if invert_y:
-            y0, y1 = page_height - y1, page_height - y0
-        if invert_x:
-            x0, x1 = page_width - x1, page_width - x0
-        return cls(x0, y0, x1, y1)
-
-    def set_vertical_orientation(self, orientation: PageOrientation):
-        pass
 
 
 def get_bbox(block) -> Tuple[float, float, float, float]:

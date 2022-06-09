@@ -3,20 +3,18 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Callable, Union, Tuple
 
-import fitz
-import pdfminer
-import pdfminer.layout
+
 
 from pdfscraper.layout.drawing import Shape, process_pymupdf_drawing, process_pdfminer_drawing
 from pdfscraper.layout.image import Image, get_images_from_pymupdf_page, get_image
 from pdfscraper.layout.text import Word, Block, Line, Span
-from pdfscraper.layout.utils import Bbox, group_objs_y, get_topmost
+from pdfscraper.layout.utils import Bbox, group_objs_y, get_topmost, Orientation
 from pdfscraper.layout.utils import PageOrientation
 
 
 class Page:
     def __init__(self, words: List[Word], drawings: List[Shape], images: List[Image],
-                 raw_object: Union[fitz.fitz.Page, pdfminer.layout.LTPage], blocks: List[Block]) -> None:
+                 raw_object: Union['fitz.fitz.Page', 'pdfminer.layout.LTPage'], blocks: List[Block]) -> None:
         self.words = words
         self.drawings = drawings
         self.images = images
@@ -60,6 +58,7 @@ class Page:
         return ret_1, ret_2
 
     def take_screenshot(self, area: Tuple[float, float, float, float], output_path):
+        import fitz
         if isinstance(self.raw_object, fitz.fitz.Page):
             self.raw_object.get_pixmap(dpi=300, clip=area).save(output_path)
         else:
@@ -72,10 +71,14 @@ class Page:
         return group_objs_y(self.words)
 
     @classmethod
-    def from_pymupdf(cls, page: fitz.fitz.Page, orientation: PageOrientation = None) -> Page:
+    def from_pymupdf(cls, page: 'fitz.fitz.Page', orientation: Orientation = None) -> Page:
+
+        page_orientation = PageOrientation(orientation=orientation, page_width=page.rect.width,
+                                           page_height=page.rect.height)
         if not orientation:
-            orientation = PageOrientation.create(bottom_is_zero=False, left_is_zero=True, page_width=page.rect.width,
-                                                 page_height=page.rect.height)
+            page_orientation = PageOrientation.create(bottom_is_zero=False, left_is_zero=True,
+                                                      page_width=page.rect.width,
+                                                      page_height=page.rect.height)
 
         def _get_words_blocks_from_page(page, page_orientation: PageOrientation):
             blocks = page.get_text("rawdict", flags=3)["blocks"]
@@ -105,23 +108,25 @@ class Page:
             drawings = sorted(drawings, key=get_topmost)
             return drawings
 
-        drawings = _get_drawings_from_pymupdf_page(page, orientation)
-        words, blocks = _get_words_blocks_from_page(page, orientation)  # type: ignore
+        drawings = _get_drawings_from_pymupdf_page(page, page_orientation)
+        words, blocks = _get_words_blocks_from_page(page, page_orientation)  # type: ignore
         pymupdf_images = get_images_from_pymupdf_page(page)
-        images = [Image.from_pymupdf(image=image, doc=page.parent, orientation=orientation)
+        images = [Image.from_pymupdf(image=image, doc=page.parent, orientation=page_orientation)
                   for image in pymupdf_images]
         page = cls(words=words, drawings=drawings, images=images, raw_object=page, blocks=blocks)
 
         return page
 
     @classmethod
-    def from_pdfminer(cls, page: pdfminer.layout.LTPage, orientation: PageOrientation = None) -> Page:
-
+    def from_pdfminer(cls, page: 'pdfminer.layout.LTPage', orientation: Orientation = None) -> Page:
+        import pdfminer
+        page_orientation = PageOrientation(orientation=orientation, page_width=page.width,
+                                           page_height=page.height)
         if not orientation:
-            orientation = PageOrientation.create(bottom_is_zero=False, left_is_zero=True, page_width=page.width,
-                                                 page_height=page.height)
+            page_orientation = PageOrientation.create(bottom_is_zero=False, left_is_zero=True, page_width=page.width,
+                                                      page_height=page.height)
 
-        def _get_words_blocks_from_page(page):
+        def _get_words_blocks_from_page(page, page_orientation):
             blocks = []
             text_boxes = [i for i in page if hasattr(i, "get_text")]
             for text_box in text_boxes:
@@ -131,7 +136,7 @@ class Page:
                 ]
                 # convert lines into spans
                 lines = [
-                    Span.from_pdfminer([i for i in line if type(i) != pdfminer.layout.LTAnno], orientation)
+                    Span.from_pdfminer([i for i in line if type(i) != pdfminer.layout.LTAnno], page_orientation)
                     for line in lines
                 ]
                 # make a block out of spans
@@ -141,21 +146,20 @@ class Page:
             ]
             return words, blocks
 
-        def _get_drawings_from_page(page):
+        def _get_drawings_from_page(page, page_orientation):
             drawings = [i for i in page if issubclass(type(i), pdfminer.layout.LTCurve)]
-            print(type(i) for i in drawings)
-            drawings = [process_pdfminer_drawing(i, orientation) for i in drawings]
+            drawings = [process_pdfminer_drawing(i, page_orientation) for i in drawings]
             drawings = sorted(drawings, key=get_topmost)
             return drawings
 
-        def _get_images_from_page(page):
+        def _get_images_from_page(page, page_orientation):
             images = filter(bool, map(get_image, page))
-            images = [Image.from_pdfminer(image, orientation) for image in images]
+            images = [Image.from_pdfminer(image, page_orientation) for image in images]
             return images
 
-        drawings = _get_drawings_from_page(page)
-        images = _get_images_from_page(page)
-        words, blocks = _get_words_blocks_from_page(page)
+        drawings = _get_drawings_from_page(page, page_orientation=page_orientation)
+        images = _get_images_from_page(page, page_orientation=page_orientation)
+        words, blocks = _get_words_blocks_from_page(page, page_orientation=page_orientation)
         page = cls(words=words, images=images, drawings=drawings, raw_object=page, blocks=blocks)
         return page
 

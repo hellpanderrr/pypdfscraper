@@ -10,9 +10,7 @@ try:
 except ImportError:
     from typing_extensions import Literal, TypedDict  # type: ignore
 
-import fitz  # type: ignore
-import pdfminer
-import pdfminer.layout
+
 
 from pdfscraper.layout.utils import Bbox, PageOrientation, create_bbox_backend, Backend
 
@@ -20,6 +18,7 @@ ImageSource = Literal["pdfminer", "mupdf"]
 
 
 def get_image(layout_object) -> Optional['pdfminer.layout.LTImage']:
+    import pdfminer
     if isinstance(layout_object, pdfminer.layout.LTImage):
         return layout_object
     elif isinstance(layout_object, pdfminer.layout.LTContainer):
