@@ -15,7 +15,7 @@ def test_drawings():
     doc = fitz.open(test_path)
     fitz_page = doc[0]
     pdfminer_page = list(extract_pages(test_path))[0]
-    for mupdf_drawing, pdfminer_drawing in zip(Page.from_mupdf(fitz_page).drawings,
+    for mupdf_drawing, pdfminer_drawing in zip(Page.from_pymupdf(fitz_page).drawings,
                                                Page.from_pdfminer(pdfminer_page).drawings):
         assert mupdf_drawing.fill_color == pdfminer_drawing.fill_color
         assert mupdf_drawing.stroke_color == pdfminer_drawing.stroke_color
@@ -27,7 +27,7 @@ def test_images():
     doc = fitz.open(test_path)
     fitz_page = doc[0]
     pdfminer_page = list(extract_pages(test_path))[0]
-    for mupdf_drawing, pdfminer_drawing in zip(Page.from_mupdf(fitz_page).images,
+    for mupdf_drawing, pdfminer_drawing in zip(Page.from_pymupdf(fitz_page).images,
                                                Page.from_pdfminer(pdfminer_page).images):
         assert mupdf_drawing.bbox == pdfminer_drawing.bbox
         assert mupdf_drawing.bpc == pdfminer_drawing.bpc
@@ -45,7 +45,7 @@ def test_images_saving():
     doc = fitz.open(test_path)
     fitz_page = doc[0]
     pdfminer_page = list(extract_pages(test_path))[0]
-    for mupdf_image, pdfminer_image in zip(Page.from_mupdf(fitz_page).images,
+    for mupdf_image, pdfminer_image in zip(Page.from_pymupdf(fitz_page).images,
                                            Page.from_pdfminer(pdfminer_page).images):
         mupdf_image.save('test.png')
         pdfminer_image.save('test.png')
@@ -57,7 +57,7 @@ def test_text():
     fitz_page = doc[0]
     pages = extract_pages(test_path)
     pdfminer_page = next(pages)
-    for mupdf_line, pdfminer_line in zip(Page.from_mupdf(fitz_page).sorted,
+    for mupdf_line, pdfminer_line in zip(Page.from_pymupdf(fitz_page).sorted,
                                          Page.from_pdfminer(pdfminer_page).sorted):
         for mupdf_word, pdfminer_word in zip(mupdf_line, pdfminer_line):
             assert (mupdf_word.text == pdfminer_word.text)
@@ -99,5 +99,7 @@ def test_annotations():
         for a1, a2 in zip(annots, miner_annots):
             anno1 = PyMuPDFAnnotation.from_annot(a1)
             anno2 = PDFMinerAnnotation.from_annot(a2)
-            assert (Annotation.from_pymupdf_annot(anno1, orientation=orientation).content ==
-                    Annotation.from_pdfminer_annot(anno2, orientation=orientation).content)
+
+            assert Annotation.from_pymupdf_annot(anno1,
+                                                 orientation=orientation).content == Annotation.from_pdfminer_annot(
+                anno2, orientation=orientation).content

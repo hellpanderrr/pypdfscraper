@@ -3,22 +3,18 @@ from __future__ import annotations
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Optional, Any, Dict, Tuple, Iterable, Iterator
+from typing import Optional, Any, Tuple, Iterable, Iterator
 
 try:
     from typing import Literal, TypedDict
 except ImportError:
-    from typing_extensions import Literal, TypedDict # type: ignore
+    from typing_extensions import Literal, TypedDict  # type: ignore
 
-
-from typing import TYPE_CHECKING
-
-
-import fitz # type: ignore
+import fitz  # type: ignore
 import pdfminer
 import pdfminer.layout
 
-from pdfscraper.layout.utils import Bbox, PageOrientation, DEFAULT_BACKEND_PAGE_ORIENTATIONS
+from pdfscraper.layout.utils import Bbox, PageOrientation, create_bbox_backend, Backend
 
 ImageSource = Literal["pdfminer", "mupdf"]
 
@@ -29,8 +25,7 @@ def get_image(layout_object) -> Optional['pdfminer.layout.LTImage']:
     elif isinstance(layout_object, pdfminer.layout.LTContainer):
         for child in layout_object:
             return get_image(child)
-        else:
-            return None
+        return None
     else:
         return None
 
@@ -75,7 +70,7 @@ class Image:
         with attr_as(im, "name", name):
             return ImageWriter(folder).export_image(im)
 
-    def _save_mupdf(self, path: str):
+    def _save_pymupdf(self, path: str):
         with open(path, "wb") as f:
             f.write(self.parent_object.extract_image(self.xref)["image"])
 
@@ -83,7 +78,7 @@ class Image:
         if self.source == "pdfminer":
             self._save_pdfminer(path)
         elif self.source == "mupdf":
-            self._save_mupdf(path)
+            self._save_pymupdf(path)
 
     @classmethod
     def from_pdfminer(
@@ -98,14 +93,7 @@ class Image:
         """
         from pdfminer.psparser import PSLiteral
 
-        bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].vertical_orientation.bottom_is_zero
-        left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].horizontal_orientation.left_is_zero
-
-        bbox = Bbox.from_coords(coords=image.bbox,
-                                invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
-                                invert_x=orientation.left_is_zero ^ left_is_zero,
-                                page_height=orientation.page_height,
-                                page_width=orientation.page_width)
+        bbox = create_bbox_backend(backend=Backend.PDFMINER, coords=image.bbox, orientation=orientation)
 
         bpc = image.bits
         if hasattr(image.colorspace[0], "name"):
@@ -137,20 +125,12 @@ class Image:
         )
 
     @classmethod
-    def from_mupdf(
+    def from_pymupdf(
             cls, image: MuPDFImage, doc: 'fitz.fitz.Document', orientation: PageOrientation
     ) -> 'Image':
-        bbox = image.get("bbox")
+        raw_bbox = image.get("bbox")
 
-        bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].vertical_orientation.bottom_is_zero
-        left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].horizontal_orientation.left_is_zero
-
-        bbox = Bbox.from_coords(coords=bbox,
-                                invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
-                                invert_x=orientation.left_is_zero ^ left_is_zero,
-                                page_height=orientation.page_height,
-                                page_width=orientation.page_width)
-
+        bbox = create_bbox_backend(backend=Backend.PYMUPDF, coords=raw_bbox, orientation=orientation)
 
         bpc = image.get("bpc")
         colorspace_name = image.get("colorspace_name")
@@ -189,7 +169,7 @@ class MuPDFImage(TypedDict):
     bbox: Tuple
 
 
-def get_images_from_mupdf_page(page) -> Iterable[MuPDFImage]:
+def get_images_from_pymupdf_page(page) -> Iterable[MuPDFImage]:
     images = page.get_images(full=True)
     for (
             xref,

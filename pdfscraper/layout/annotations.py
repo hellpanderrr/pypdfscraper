@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import Dict, List
 
-import fitz # type: ignore
+import fitz  # type: ignore
 import pdfminer
 
-from .utils import Bbox, DEFAULT_BACKEND_PAGE_ORIENTATIONS
+from .utils import Bbox, create_bbox_backend, Backend
 
 
 @dataclass
@@ -83,7 +83,7 @@ class PDFMinerAnnotation:
         subject = annot.get('Subj')
         flags = int(annot.get('F'))
 
-       #flags = int(flags) if flags else flags
+        # flags = int(flags) if flags else flags
         color = annot.get('C')
         creation_date = annot.get('CreationDate')
         mod_date = annot.get('M') or annot.get('ModDate')
@@ -122,14 +122,8 @@ class Annotation:
         creation_date = annot.info.get('creationDate')
         mod_date = annot.info.get('modDate')
         subject = annot.info.get('subject')
-        bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].vertical_orientation.bottom_is_zero
-        left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].horizontal_orientation.left_is_zero
 
-        rect = Bbox.from_coords(coords=annot.rect,
-                                invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
-                                invert_x=orientation.left_is_zero ^ left_is_zero,
-                                page_height=orientation.page_height,
-                                page_width=orientation.page_width)
+        rect = create_bbox_backend(backend=Backend.PYMUPDF, coords=annot.rect, orientation=orientation)
 
         return cls(content=content,
                    author=author,
@@ -139,17 +133,10 @@ class Annotation:
 
     @classmethod
     def from_pdfminer_annot(cls, annot, orientation):
-        bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].vertical_orientation.bottom_is_zero
-        left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].horizontal_orientation.left_is_zero
+        rect = create_bbox_backend(backend=Backend.PDFMINER, coords=annot.rect, orientation=orientation)
 
-        rect = Bbox.from_coords(coords=annot.rect,
-                                invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
-                                invert_x=orientation.left_is_zero ^ left_is_zero,
-                                page_height=orientation.page_height,
-                                page_width=orientation.page_width)
         return cls(content=annot.content,
                    author=annot.author,
                    mod_date=annot.mod_date,
                    creation_date=annot.creation_date,
                    rect=rect)
-

@@ -7,7 +7,7 @@ import pdfminer
 import unicodedata
 from pdfminer.layout import LTRect
 
-from pdfscraper.layout.utils import Bbox, DEFAULT_BACKEND_PAGE_ORIENTATIONS
+from pdfscraper.layout.utils import Bbox, create_bbox_backend, Backend
 from pdfscraper.layout.utils import (
     get_leftmost,
     get_rightmost,
@@ -73,7 +73,7 @@ class Span:
         return "Span <%s> %s" % ([round(i) for i in self.bbox], self.words)
 
     @classmethod
-    def from_mupdf(cls, span: dict, orientation) -> 'Span':
+    def from_pymupdf(cls, span: dict, orientation) -> 'Span':
         words = [
             list(g)
             for k, g in (
@@ -91,14 +91,7 @@ class Span:
             text = "".join([c["c"] for c in word])
 
             # mupdf has top as zero and left as zero by default
-            bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].vertical_orientation.bottom_is_zero
-            left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['mupdf'].horizontal_orientation.left_is_zero
-
-            bbox = Bbox.from_coords((x0, y0, x1, y1),
-                                    invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
-                                    invert_x=orientation.left_is_zero ^ left_is_zero,
-                                    page_height=orientation.page_height,
-                                    page_width=orientation.page_width)
+            bbox = create_bbox_backend(backend=Backend.PYMUPDF, coords=(x0, y0, x1, y1), orientation=orientation)
 
             new_words.append(
                 Word(
@@ -149,15 +142,7 @@ class Span:
             font = word[0].fontname
             size = word[0].size
 
-            bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].vertical_orientation.bottom_is_zero
-            left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS['pdfminer'].horizontal_orientation.left_is_zero
-
-
-            bbox = Bbox.from_coords((x0, y0, x1, y1),
-                                    invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
-                                    invert_x=orientation.left_is_zero ^ left_is_zero,
-                                    page_height=orientation.page_height,
-                                    page_width=orientation.page_width)
+            bbox = create_bbox_backend(backend=Backend.PDFMINER, coords=(x0, y0, x1, y1), orientation=orientation)
 
             new_words.append(
                 Word(

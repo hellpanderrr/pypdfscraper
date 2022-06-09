@@ -7,8 +7,8 @@ import fitz
 import pdfminer
 import pdfminer.layout
 
-from pdfscraper.layout.drawing import Shape, process_mupdf_drawing, process_pdfminer_drawing
-from pdfscraper.layout.image import Image, get_images_from_mupdf_page, get_image
+from pdfscraper.layout.drawing import Shape, process_pymupdf_drawing, process_pdfminer_drawing
+from pdfscraper.layout.image import Image, get_images_from_pymupdf_page, get_image
 from pdfscraper.layout.text import Word, Block, Line, Span
 from pdfscraper.layout.utils import Bbox, group_objs_y, get_topmost
 from pdfscraper.layout.utils import PageOrientation
@@ -72,7 +72,7 @@ class Page:
         return group_objs_y(self.words)
 
     @classmethod
-    def from_mupdf(cls, page: fitz.fitz.Page, orientation: PageOrientation = None) -> Page:
+    def from_pymupdf(cls, page: fitz.fitz.Page, orientation: PageOrientation = None) -> Page:
         if not orientation:
             orientation = PageOrientation.create(bottom_is_zero=False, left_is_zero=True, page_width=page.rect.width,
                                                  page_height=page.rect.height)
@@ -82,7 +82,7 @@ class Page:
             for block in blocks:
                 for line in block["lines"]:
                     for j, span in enumerate(line["spans"]):
-                        line["spans"][j] = Span.from_mupdf(span, page_orientation)
+                        line["spans"][j] = Span.from_pymupdf(span, page_orientation)
             for block in blocks:
                 for k, line in enumerate(block["lines"]):
                     block["lines"][k] = Line(bbox=(line["bbox"]), spans=line["spans"])
@@ -99,17 +99,17 @@ class Page:
 
             return words, blocks
 
-        def _get_drawings_from_mupdf_page(page, page_orientation):
+        def _get_drawings_from_pymupdf_page(page, page_orientation):
             drawings = sorted(page.get_drawings(), key=lambda x: x["rect"][1])
-            drawings = [process_mupdf_drawing(i, page_orientation) for i in drawings]
+            drawings = [process_pymupdf_drawing(i, page_orientation) for i in drawings]
             drawings = sorted(drawings, key=get_topmost)
             return drawings
 
-        drawings = _get_drawings_from_mupdf_page(page, orientation)
+        drawings = _get_drawings_from_pymupdf_page(page, orientation)
         words, blocks = _get_words_blocks_from_page(page, orientation)  # type: ignore
-        mupdf_images = get_images_from_mupdf_page(page)
-        images = [Image.from_mupdf(image=image, doc=page.parent, orientation=orientation)
-                  for image in mupdf_images]
+        pymupdf_images = get_images_from_pymupdf_page(page)
+        images = [Image.from_pymupdf(image=image, doc=page.parent, orientation=orientation)
+                  for image in pymupdf_images]
         page = cls(words=words, drawings=drawings, images=images, raw_object=page, blocks=blocks)
 
         return page

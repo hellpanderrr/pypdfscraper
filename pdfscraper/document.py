@@ -15,7 +15,7 @@ class Document:
         if isinstance(path, str):
             import fitz
             doc = fitz.open(path)
-            return cls(pages=[Page.from_mupdf(page, orientation=orientation) for page in doc], doc=doc)
+            return cls(pages=[Page.from_pymupdf(page, orientation=orientation) for page in doc], doc=doc)
 
     @classmethod
     def from_pdfminer(cls, path, orientation) -> 'Document':

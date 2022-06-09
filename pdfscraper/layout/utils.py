@@ -1,6 +1,7 @@
 import itertools
 from collections import defaultdict
 from dataclasses import dataclass
+from enum import Enum
 from typing import List, Tuple, Iterable, NamedTuple, Dict
 
 try:
@@ -62,14 +63,18 @@ class PageOrientation:
                                   vertical_orientation=VerticalOrientation(bottom_is_zero=bottom_is_zero))
         return cls(orientation=orientation, page_height=page_height, page_width=page_width)
 
-Backend = Literal['pdfminer', 'mupdf']
 
-DEFAULT_BACKEND_PAGE_ORIENTATIONS: Dict[Backend, Orientation] = {
-    'pdfminer': Orientation.create(bottom_is_zero=True, left_is_zero=True),
-    'mupdf': Orientation.create(bottom_is_zero=False, left_is_zero=True)}
+class Backend(Enum):
+    PDFMINER = 'pdfminer'
+    PYMUPDF = 'pymupdf'
 
 
-def create_bbox_backend(backend: Backend, coords, orientation):
+DEFAULT_BACKEND_PAGE_ORIENTATIONS: Dict[Literal[Backend.PDFMINER, Backend.PYMUPDF], Orientation] = {
+    Backend.PDFMINER: Orientation.create(bottom_is_zero=True, left_is_zero=True),
+    Backend.PYMUPDF: Orientation.create(bottom_is_zero=False, left_is_zero=True)}
+
+
+def create_bbox_backend(backend: Backend, coords, orientation: PageOrientation):
     bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[backend].vertical_orientation.bottom_is_zero
     left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[backend].horizontal_orientation.left_is_zero
 
@@ -168,7 +173,6 @@ def get_bottommost(block) -> float:
     # bottom is infinity
     x0, y0, x1, y1, *_ = get_bbox(block)
     return max(y0, y1)
-
 
 
 def group_objs_y(words: List,
