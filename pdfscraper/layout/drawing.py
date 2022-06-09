@@ -3,12 +3,18 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, Dict, Tuple, List, Union
 
-
-from pdfscraper.layout.utils import Color, Bbox, PageOrientation, create_bbox_backend, Backend
+from pdfscraper.layout.utils import (
+    Color,
+    Bbox,
+    PageOrientation,
+    create_bbox_backend,
+    Backend,
+)
 
 
 def get_pts(drawing: Dict) -> List:
     import fitz
+
     ret = []
     for i in drawing["items"]:
         for j in i[1:]:
@@ -54,13 +60,16 @@ Shape = Union[LineShape, RectShape, CurveShape]
 
 
 def process_pdfminer_drawing(
-        drawing: Union['pdfminer.layout.LTRect', 'pdfminer.layout.LTLine', 'pdfminer.layout.LTCurve'],
-        orientation: PageOrientation) -> Shape:
+    drawing: Union[
+        "pdfminer.layout.LTRect", "pdfminer.layout.LTLine", "pdfminer.layout.LTCurve"
+    ],
+    orientation: PageOrientation,
+) -> Shape:
     fill = drawing.fill
     fill_color = None
     stroke_color = None
     if fill:
-        if hasattr(drawing.non_stroking_color, '__len__'):
+        if hasattr(drawing.non_stroking_color, "__len__"):
             if len(drawing.non_stroking_color) == 1:
                 drawing.non_stroking_color *= 3
             fill_color = Color(*drawing.non_stroking_color)
@@ -75,7 +84,9 @@ def process_pdfminer_drawing(
             drawing.stroking_color *= 3
         stroke_color = Color(*drawing.stroking_color)
     # pdfminer has bottom as y-zero
-    bbox = create_bbox_backend(backend=Backend.PDFMINER, coords=drawing.bbox, orientation=orientation)
+    bbox = create_bbox_backend(
+        backend=Backend.PDFMINER, coords=drawing.bbox, orientation=orientation
+    )
 
     pts = None  # drawing.pts
     args = {
@@ -87,6 +98,7 @@ def process_pdfminer_drawing(
         "points": pts,
     }
     import pdfminer
+
     if isinstance(drawing, pdfminer.layout.LTRect):
         return RectShape(**args)
     elif isinstance(drawing, pdfminer.layout.LTLine):
@@ -102,7 +114,9 @@ def process_pymupdf_drawing(drawing: Dict, orientation: PageOrientation) -> Shap
     stroke = "s" in drawing["type"]
     stroke_color = Color(*drawing["color"]) if stroke else None
     # mupdf has top as y-zero
-    bbox = create_bbox_backend(backend=Backend.PYMUPDF, coords=drawing["rect"], orientation=orientation)
+    bbox = create_bbox_backend(
+        backend=Backend.PYMUPDF, coords=drawing["rect"], orientation=orientation
+    )
 
     pts = None  # get_pts(drawing)
     args = {

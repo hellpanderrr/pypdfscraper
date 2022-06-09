@@ -18,16 +18,17 @@ class Word:
     """
     A text string representing one word. It's generated from a line of text by splitting on a space.
     """
+
     __slots__ = ("text", "bbox", "font", "size", "color")
 
     def __init__(
-            self,
-            text: str = "",
-            bbox: Union[Bbox, List[int], Tuple[int]] = None,
-            font: str = "",
-            size: str = "",
-            color=None,
-            normalize_text=False,
+        self,
+        text: str = "",
+        bbox: Union[Bbox, List[int], Tuple[int]] = None,
+        font: str = "",
+        size: str = "",
+        color=None,
+        normalize_text=False,
     ):
         self.text = text
         if normalize_text:
@@ -71,11 +72,13 @@ class Span:
         return "Span <%s> %s" % ([round(i) for i in self.bbox], self.words)
 
     @classmethod
-    def from_pymupdf(cls, span: dict, orientation) -> 'Span':
+    def from_pymupdf(cls, span: dict, orientation) -> "Span":
         words = [
             list(g)
             for k, g in (
-                itertools.groupby(span["chars"], key=lambda x: x["c"] not in (" ", "\xa0"))
+                itertools.groupby(
+                    span["chars"], key=lambda x: x["c"] not in (" ", "\xa0")
+                )
             )
         ]
         new_words = []
@@ -89,7 +92,11 @@ class Span:
             text = "".join([c["c"] for c in word])
 
             # mupdf has top as zero and left as zero by default
-            bbox = create_bbox_backend(backend=Backend.PYMUPDF, coords=(x0, y0, x1, y1), orientation=orientation)
+            bbox = create_bbox_backend(
+                backend=Backend.PYMUPDF,
+                coords=(x0, y0, x1, y1),
+                orientation=orientation,
+            )
 
             new_words.append(
                 Word(
@@ -107,9 +114,7 @@ class Span:
         return cls(words=new_words, bbox=bbox)
 
     @classmethod
-    def from_pdfminer(cls,
-                      span: List['pdfminer.layout.LTChar'], orientation
-                      ) -> 'Span':
+    def from_pdfminer(cls, span: List["pdfminer.layout.LTChar"], orientation) -> "Span":
         """
         Convert a list of pdfminer characters into a Span.
 
@@ -119,6 +124,7 @@ class Span:
 
         """
         import pdfminer
+
         words = [
             list(g)
             for k, g in (
@@ -141,7 +147,11 @@ class Span:
             font = word[0].fontname
             size = word[0].size
 
-            bbox = create_bbox_backend(backend=Backend.PDFMINER, coords=(x0, y0, x1, y1), orientation=orientation)
+            bbox = create_bbox_backend(
+                backend=Backend.PDFMINER,
+                coords=(x0, y0, x1, y1),
+                orientation=orientation,
+            )
 
             new_words.append(
                 Word(

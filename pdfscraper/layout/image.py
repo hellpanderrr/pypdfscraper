@@ -11,14 +11,14 @@ except ImportError:
     from typing_extensions import Literal, TypedDict  # type: ignore
 
 
-
 from pdfscraper.layout.utils import Bbox, PageOrientation, create_bbox_backend, Backend
 
 ImageSource = Literal["pdfminer", "mupdf"]
 
 
-def get_image(layout_object) -> Optional['pdfminer.layout.LTImage']:
+def get_image(layout_object) -> Optional["pdfminer.layout.LTImage"]:
     import pdfminer
+
     if isinstance(layout_object, pdfminer.layout.LTImage):
         return layout_object
     elif isinstance(layout_object, pdfminer.layout.LTContainer):
@@ -43,6 +43,7 @@ class Image:
     An image created from pdfminer or pymupdf object.
 
     """
+
     bbox: Bbox
     width: float
     height: float
@@ -62,6 +63,7 @@ class Image:
 
     def _save_pdfminer(self, path: str):
         from pdfminer.image import ImageWriter
+
         path, ext = os.path.splitext(path)
         path = os.path.abspath(path)
         folder, name = os.path.split(path)
@@ -81,8 +83,8 @@ class Image:
 
     @classmethod
     def from_pdfminer(
-            cls, image: 'pdfminer.layout.LTImage', orientation: PageOrientation
-    ) -> 'Image':
+        cls, image: "pdfminer.layout.LTImage", orientation: PageOrientation
+    ) -> "Image":
         """
         Create an image out of pdfminer object.
 
@@ -92,7 +94,9 @@ class Image:
         """
         from pdfminer.psparser import PSLiteral
 
-        bbox = create_bbox_backend(backend=Backend.PDFMINER, coords=image.bbox, orientation=orientation)
+        bbox = create_bbox_backend(
+            backend=Backend.PDFMINER, coords=image.bbox, orientation=orientation
+        )
 
         bpc = image.bits
         if hasattr(image.colorspace[0], "name"):
@@ -125,11 +129,13 @@ class Image:
 
     @classmethod
     def from_pymupdf(
-            cls, image: MuPDFImage, doc: 'fitz.fitz.Document', orientation: PageOrientation
-    ) -> 'Image':
+        cls, image: MuPDFImage, doc: "fitz.fitz.Document", orientation: PageOrientation
+    ) -> "Image":
         raw_bbox = image.get("bbox")
 
-        bbox = create_bbox_backend(backend=Backend.PYMUPDF, coords=raw_bbox, orientation=orientation)
+        bbox = create_bbox_backend(
+            backend=Backend.PYMUPDF, coords=raw_bbox, orientation=orientation
+        )
 
         bpc = image.get("bpc")
         colorspace_name = image.get("colorspace_name")
@@ -171,29 +177,31 @@ class MuPDFImage(TypedDict):
 def get_images_from_pymupdf_page(page) -> Iterable[MuPDFImage]:
     images = page.get_images(full=True)
     for (
-            xref,
-            smask,
-            source_width,
-            source_height,
-            bpc,
-            colorspace,
-            alt_colorspace,
-            name,
-            decode_filter,
-            referencer_xref
+        xref,
+        smask,
+        source_width,
+        source_height,
+        bpc,
+        colorspace,
+        alt_colorspace,
+        name,
+        decode_filter,
+        referencer_xref,
     ) in images:
-        bbox = page.get_image_bbox((
-            xref,
-            smask,
-            source_width,
-            source_height,
-            bpc,
-            colorspace,
-            alt_colorspace,
-            name,
-            decode_filter,
-            referencer_xref
-        ))
+        bbox = page.get_image_bbox(
+            (
+                xref,
+                smask,
+                source_width,
+                source_height,
+                bpc,
+                colorspace,
+                alt_colorspace,
+                name,
+                decode_filter,
+                referencer_xref,
+            )
+        )
         yield {
             "xref": xref,
             "mask_xref": smask,
