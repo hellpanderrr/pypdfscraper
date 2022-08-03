@@ -5,7 +5,7 @@ from typing import Union, List, Tuple
 
 import unicodedata
 
-from pdfscraper.layout.utils import Bbox, create_bbox_backend, Backend
+from pdfscraper.layout.utils import Bbox, create_bbox_backend, Backend, PageOrientation, Rectangular
 from pdfscraper.layout.utils import (
     get_leftmost,
     get_rightmost,
@@ -14,17 +14,46 @@ from pdfscraper.layout.utils import (
 )
 
 
-class Word:
+class TextLine(Rectangular):
+    """
+    A horizontal line of text.
+    """
+
+    def __init__(self, words):
+        self.words = words
+        self.bbox = Bbox(words[0].bbox.x0, words[0].bbox.y0,
+                         words[-1].bbox.x1, words[-1].bbox.y1)
+
+    @property
+    def text(self):
+        return ' '.join(str(i) for i in self.words)
+
+    def __getitem__(self, key):
+        return self.words[key]
+
+    def __str__(self):
+        return self.text
+
+    def __repr__(self):
+        return f'TextLine(bbox={self.bbox}, words=\n[%s]' % ',\n '.join(repr(i) for i in self.words)
+
+    def __contains__(self, text):
+        if text in self.text:
+            return True
+        else:
+            return False
+
+class Word(Rectangular):
     """
     A text string representing one word. It's generated from a line of text by splitting on a space.
     """
 
-    __slots__ = ("text", "bbox", "font", "size", "color")
+    #__slots__ = ("text", "bbox", "font", "size", "color")
 
     def __init__(
         self,
+        bbox: Bbox,
         text: str = "",
-        bbox: Union[Bbox, List[int], Tuple[int]] = None,
         font: str = "",
         size: str = "",
         color=None,
@@ -39,25 +68,25 @@ class Word:
         self.size = size
         self.color = color
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(repr(self))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'Word(text="{self.text}",bbox={self.bbox})'
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if (self.text, self.bbox) == (other.text, other.bbox):
             return True
         return False
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.text
 
 
-class Span:
+class Span(Rectangular):
     __slots__ = ("words", "bbox")
 
-    def __init__(self, words: List[Word] = None, bbox: Bbox = None):
+    def __init__(self, bbox: Bbox, words: List[Word] = None):
         """
         A collection of words.
         """
@@ -72,7 +101,7 @@ class Span:
         return "Span <%s> %s" % ([round(i) for i in self.bbox], self.words)
 
     @classmethod
-    def from_pymupdf(cls, span: dict, orientation) -> "Span":
+    def from_pymupdf(cls, span: dict, page_orientation: PageOrientation) -> "Span":
         words = [
             list(g)
             for k, g in (
@@ -95,7 +124,7 @@ class Span:
             bbox = create_bbox_backend(
                 backend=Backend.PYMUPDF,
                 coords=(x0, y0, x1, y1),
-                orientation=orientation,
+                page_orientation=page_orientation,
             )
 
             new_words.append(
@@ -114,7 +143,7 @@ class Span:
         return cls(words=new_words, bbox=bbox)
 
     @classmethod
-    def from_pdfminer(cls, span: List["pdfminer.layout.LTChar"], orientation) -> "Span":
+    def from_pdfminer(cls, span: List["pdfminer.layout.LTChar"], page_orientation: PageOrientation) -> "Span":
         """
         Convert a list of pdfminer characters into a Span.
 
@@ -150,7 +179,7 @@ class Span:
             bbox = create_bbox_backend(
                 backend=Backend.PDFMINER,
                 coords=(x0, y0, x1, y1),
-                orientation=orientation,
+                page_orientation=page_orientation,
             )
 
             new_words.append(
@@ -172,7 +201,7 @@ class Span:
 class Line:
     __slots__ = ("bbox", "spans")
 
-    def __init__(self, bbox: List[float], spans):
+    def __init__(self, bbox: Bbox, spans):
         self.bbox = bbox
         self.spans = spans
 

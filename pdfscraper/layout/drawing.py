@@ -8,7 +8,7 @@ from pdfscraper.layout.utils import (
     Bbox,
     PageOrientation,
     create_bbox_backend,
-    Backend,
+    Backend, Rectangular,
 )
 
 
@@ -32,8 +32,10 @@ class Point:
     y: float
 
 
+
+
 @dataclass(frozen=True)
-class Drawing:
+class Drawing(Rectangular):
     bbox: Bbox
     fill_color: Optional[Color]
     stroke_color: Optional[Color]
@@ -59,11 +61,17 @@ class CurveShape(Drawing):
 Shape = Union[LineShape, RectShape, CurveShape]
 
 
+def cmyk_to_rgb(c, m, y, k, cmyk_scale=1, rgb_scale=1):
+    r = rgb_scale * (1.0 - c / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
+    g = rgb_scale * (1.0 - m / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
+    b = rgb_scale * (1.0 - y / float(cmyk_scale)) * (1.0 - k / float(cmyk_scale))
+    return r, g, b
+
 def process_pdfminer_drawing(
     drawing: Union[
         "pdfminer.layout.LTRect", "pdfminer.layout.LTLine", "pdfminer.layout.LTCurve"
     ],
-    orientation: PageOrientation,
+    page_orientation: PageOrientation,
 ) -> Shape:
     fill = drawing.fill
     fill_color = None
@@ -72,6 +80,12 @@ def process_pdfminer_drawing(
         if hasattr(drawing.non_stroking_color, "__len__"):
             if len(drawing.non_stroking_color) == 1:
                 drawing.non_stroking_color *= 3
+            elif len(drawing.non_stroking_color) == 4:
+                c,m,y,k = drawing.non_stroking_color
+                drawing.non_stroking_color = cmyk_to_rgb(c,m,y,k)
+            elif len(drawing.non_stroking_color) == 2:
+                print(f'Unknown fill color detected {drawing.non_stroking_color}')
+                drawing.non_stroking_color += [0]
             fill_color = Color(*drawing.non_stroking_color)
         else:
             if drawing.non_stroking_color:
@@ -80,12 +94,21 @@ def process_pdfminer_drawing(
                 fill_color = Color(0, 0, 0)
     stroke = drawing.stroke
     if stroke:
-        if len(drawing.stroking_color) == 1:
-            drawing.stroking_color *= 3
-        stroke_color = Color(*drawing.stroking_color)
+        if hasattr(drawing.stroking_color, "__len__"):
+            if len(drawing.stroking_color) == 1:
+                drawing.stroking_color *= 3
+            elif len(drawing.stroking_color) == 4:
+                c,m,y,k=drawing.stroking_color
+                drawing.stroking_color = cmyk_to_rgb(c,m,y,k)
+            stroke_color = Color(*drawing.stroking_color)
+        else:
+            if drawing.stroking_color:
+                stroke_color = Color(*[drawing.stroking_color] * 3)
+            else:
+                stroke_color = Color(0, 0, 0)
     # pdfminer has bottom as y-zero
     bbox = create_bbox_backend(
-        backend=Backend.PDFMINER, coords=drawing.bbox, orientation=orientation
+        backend=Backend.PDFMINER, coords=drawing.bbox, page_orientation=page_orientation
     )
 
     pts = None  # drawing.pts
@@ -107,7 +130,7 @@ def process_pdfminer_drawing(
         return CurveShape(**args)
 
 
-def process_pymupdf_drawing(drawing: Dict, orientation: PageOrientation) -> Shape:
+def process_pymupdf_drawing(drawing: Dict, page_orientation: PageOrientation) -> Shape:
     items = drawing["items"]
     fill = "f" in drawing["type"]
     fill_color = Color(*drawing["fill"]) if fill else None
@@ -115,7 +138,7 @@ def process_pymupdf_drawing(drawing: Dict, orientation: PageOrientation) -> Shap
     stroke_color = Color(*drawing["color"]) if stroke else None
     # mupdf has top as y-zero
     bbox = create_bbox_backend(
-        backend=Backend.PYMUPDF, coords=drawing["rect"], orientation=orientation
+        backend=Backend.PYMUPDF, coords=drawing["rect"], page_orientation=page_orientation
     )
 
     pts = None  # get_pts(drawing)

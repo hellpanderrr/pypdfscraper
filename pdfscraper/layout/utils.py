@@ -64,16 +64,12 @@ class PageOrientation:
         return self.orientation.vertical_orientation.bottom_is_zero
 
     @classmethod
-    def create(
-        cls, left_is_zero=True, bottom_is_zero=False, page_width=None, page_height=None
-    ):
+    def create(cls, left_is_zero=True, bottom_is_zero=False, page_width=None, page_height=None):
         orientation = Orientation(
             horizontal_orientation=HorizontalOrientation(left_is_zero=left_is_zero),
             vertical_orientation=VerticalOrientation(bottom_is_zero=bottom_is_zero),
         )
-        return cls(
-            orientation=orientation, page_height=page_height, page_width=page_width
-        )
+        return cls(orientation=orientation, page_height=page_height, page_width=page_width)
 
 
 class Bbox(NamedTuple):
@@ -87,14 +83,29 @@ class Bbox(NamedTuple):
     y1: float
 
     def __str__(self) -> str:
-        return (
-            f"Bbox(x0={self.x0:.2f},y0={self.y0:.2f},x1={self.x1:.2f},y1={self.y1:.2f})"
-        )
+        return f"Bbox(x0={self.x0:.2f},y0={self.y0:.2f},x1={self.x1:.2f},y1={self.y1:.2f})"
 
     def __eq__(self, other, decimals=1, n=4) -> bool:
-        return [round(i, ndigits=decimals) for i in self[:n]] == [
-            round(i, ndigits=decimals) for i in other[:n]
-        ]
+        return [round(i, ndigits=decimals) for i in self[:n]] == [round(i, ndigits=decimals) for i in other[:n]]
+
+    def move(self, delta=(0, 0, 0, 0)):
+        return self + Bbox(*delta)
+
+    def __add__(self, other: 'Bbox'):
+        return Bbox(*[x + y for x, y in zip(self, other)])
+
+    def isclose(self, other: 'Bbox', tolerance: float):
+        """Check if two bboxes are close to each other."""
+        return (
+            abs(self.x0 - other.x0) < tolerance
+            and abs(self.y0 - other.y0) < tolerance
+            and abs(self.x1 - other.x1) < tolerance
+            and abs(self.y1 - other.y1) < tolerance
+        )
+
+    def isinside(self, other: 'Bbox') -> bool:
+        """Check if this bbox is inside another bbox."""
+        return self.x0 >= other.x0 and self.y0 >= other.y0 and self.x1 <= other.x1 and self.y1 <= other.y1
 
     @property
     def height(self) -> float:
@@ -105,9 +116,7 @@ class Bbox(NamedTuple):
         return abs(self.x0 - self.x1)
 
     @classmethod
-    def from_coords(
-        cls, coords, invert_y=False, invert_x=False, page_height=None, page_width=None
-    ) -> "Bbox":
+    def from_coords(cls, coords, invert_y=False, invert_x=False, page_height=None, page_width=None) -> "Bbox":
         x0, y0, x1, y1 = coords
 
         if invert_y:
@@ -116,8 +125,43 @@ class Bbox(NamedTuple):
             x0, x1 = page_width - x1, page_width - x0
         return cls(x0, y0, x1, y1)
 
-    def set_vertical_orientation(self, orientation: PageOrientation):
-        pass
+
+class Rectangular:
+    """
+    An object with a rectangular bounding box.
+    """
+
+    bbox: Bbox
+
+    def move(self, delta):
+        attributes = {k: v for k, v in vars(self).items()}
+        bbox = attributes.pop('bbox')
+        attributes['bbox'] = bbox + Bbox(*delta)
+        return type(self)(**attributes)
+
+    @property
+    def width(self):
+        return self.bbox.width
+
+    @property
+    def height(self):
+        return self.bbox.height
+
+    @property
+    def x0(self):
+        return self.bbox.x0
+
+    @property
+    def x1(self):
+        return self.bbox.x1
+
+    @property
+    def y0(self):
+        return self.bbox.y0
+
+    @property
+    def y1(self):
+        return self.bbox.y1
 
 
 class Backend(Enum):
@@ -125,36 +169,30 @@ class Backend(Enum):
     PYMUPDF = "pymupdf"
 
 
-DEFAULT_BACKEND_PAGE_ORIENTATIONS: Dict[
-    Literal[Backend.PDFMINER, Backend.PYMUPDF], Orientation
-] = {
+DEFAULT_BACKEND_PAGE_ORIENTATIONS: Dict[Literal[Backend.PDFMINER, Backend.PYMUPDF], Orientation] = {
     Backend.PDFMINER: Orientation.create(bottom_is_zero=True, left_is_zero=True),
     Backend.PYMUPDF: Orientation.create(bottom_is_zero=False, left_is_zero=True),
 }
 
 
-def create_bbox_backend(backend: Backend, coords, orientation: PageOrientation) -> Bbox:
+def create_bbox_backend(backend: Backend, coords, page_orientation: PageOrientation) -> Bbox:
     """
     Creates a bbox taking into account axis direction from a given page.
 
     :param backend: backend type
     :param coords: 4-item sequence of x0,y0,x1,y1 coordinates
-    :param orientation: page size together with X/Y axes directions.
+    :param page_orientation: page size together with X/Y axes directions.
     :return: a bounding box
     """
-    bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[
-        backend
-    ].vertical_orientation.bottom_is_zero
-    left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[
-        backend
-    ].horizontal_orientation.left_is_zero
+    bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[backend].vertical_orientation.bottom_is_zero
+    left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[backend].horizontal_orientation.left_is_zero
 
     return Bbox.from_coords(
         coords=coords,
-        invert_y=orientation.bottom_is_zero ^ bottom_is_zero,
-        invert_x=orientation.left_is_zero ^ left_is_zero,
-        page_height=orientation.page_height,
-        page_width=orientation.page_width,
+        invert_y=page_orientation.bottom_is_zero ^ bottom_is_zero,
+        invert_x=page_orientation.left_is_zero ^ left_is_zero,
+        page_height=page_orientation.page_height,
+        page_width=page_orientation.page_width,
     )
 
 
@@ -185,24 +223,24 @@ def get_bbox(block) -> Tuple[float, float, float, float]:
 
 
 def get_rightmost(block) -> float:
-    x0, y0, x1, y1, *_ = get_bbox(block)
+    x0, _, x1, _, *_ = get_bbox(block)
     return max(x0, x1)
 
 
 def get_leftmost(block) -> float:
-    x0, y0, x1, y1, *_ = get_bbox(block)
+    x0, _, x1, _, *_ = get_bbox(block)
     return min(x0, x1)
 
 
 def get_topmost(block) -> float:
     # top is zero
-    x0, y0, x1, y1, *_ = get_bbox(block)
+    _, y0, _, y1, *_ = get_bbox(block)
     return min(y0, y1)
 
 
 def get_bottommost(block) -> float:
     # bottom is infinity
-    x0, y0, x1, y1, *_ = get_bbox(block)
+    _, y0, _, y1, *_ = get_bbox(block)
     return max(y0, y1)
 
 
@@ -274,11 +312,5 @@ def flatten(items):
 
 
 def groupby_consec(df, col):
-    string_groups = sum(
-        [
-            ["%s_%s" % (i, n) for i in g]
-            for n, (k, g) in enumerate(itertools.groupby(df[col]))
-        ],
-        [],
-    )
+    string_groups = sum([["%s_%s" % (i, n) for i in g] for n, (k, g) in enumerate(itertools.groupby(df[col]))], [],)
     return df.groupby(string_groups, sort=False)

@@ -10,8 +10,13 @@ try:
 except ImportError:
     from typing_extensions import Literal, TypedDict  # type: ignore
 
-
-from pdfscraper.layout.utils import Bbox, PageOrientation, create_bbox_backend, Backend
+from pdfscraper.layout.utils import (
+    Bbox,
+    PageOrientation,
+    create_bbox_backend,
+    Backend,
+    Rectangular,
+)
 
 ImageSource = Literal["pdfminer", "mupdf"]
 
@@ -38,15 +43,13 @@ def attr_as(obj, field: str, value) -> Iterator[None]:
 
 
 @dataclass(frozen=True)
-class Image:
+class Image(Rectangular):
     """
     An image created from pdfminer or pymupdf object.
 
     """
 
     bbox: Bbox
-    width: float
-    height: float
     source_width: Optional[int]
     source_height: Optional[int]
     colorspace_name: Optional[str]
@@ -60,6 +63,12 @@ class Image:
 
     class Config:
         arbitrary_types_allowed = True
+
+    def __hash__(self):
+        return hash(self.bbox)
+
+    def __contains__(self, other):
+        return self.raw_object['bbox'].contains(other.raw_object['bbox'])
 
     def _save_pdfminer(self, path: str):
         from pdfminer.image import ImageWriter
@@ -82,9 +91,7 @@ class Image:
             self._save_pymupdf(path)
 
     @classmethod
-    def from_pdfminer(
-        cls, image: "pdfminer.layout.LTImage", orientation: PageOrientation
-    ) -> "Image":
+    def from_pdfminer(cls, image: "pdfminer.layout.LTImage", page_orientation: PageOrientation) -> "Image":
         """
         Create an image out of pdfminer object.
 
@@ -94,29 +101,30 @@ class Image:
         """
         from pdfminer.psparser import PSLiteral
 
-        bbox = create_bbox_backend(
-            backend=Backend.PDFMINER, coords=image.bbox, orientation=orientation
-        )
+        bbox = create_bbox_backend(backend=Backend.PDFMINER, coords=image.bbox, page_orientation=page_orientation,)
 
         bpc = image.bits
         if hasattr(image.colorspace[0], "name"):
             colorspace_name = image.colorspace[0].name
         else:
-            objs = image.colorspace[0].resolve()
+            objs = image.colorspace[0]
+            if objs:
+                objs = objs.resolve()
+            else:
+                colorspace_name = None
             if type(objs) == PSLiteral:
                 colorspace_name = objs.name
-            else:
+            elif objs:
                 colorspaces = [i for i in objs if hasattr(i, "name")]
                 colorspace_name = colorspaces[0].name
+            else:
+                colorspace_name = None
 
         name = image.name
         source_width, source_height = image.srcsize
-        width, height = image.width, image.height
         xref = image.stream.objid
         return cls(
             bbox=bbox,
-            width=width,
-            height=height,
             source_width=source_width,
             source_height=source_height,
             colorspace_name=colorspace_name,
@@ -128,14 +136,10 @@ class Image:
         )
 
     @classmethod
-    def from_pymupdf(
-        cls, image: MuPDFImage, doc: "fitz.fitz.Document", orientation: PageOrientation
-    ) -> "Image":
+    def from_pymupdf(cls, image: MuPDFImage, doc: "fitz.fitz.Document", page_orientation: PageOrientation,) -> "Image":
         raw_bbox = image.get("bbox")
 
-        bbox = create_bbox_backend(
-            backend=Backend.PYMUPDF, coords=raw_bbox, orientation=orientation
-        )
+        bbox = create_bbox_backend(backend=Backend.PYMUPDF, coords=raw_bbox, page_orientation=page_orientation)
 
         bpc = image.get("bpc")
         colorspace_name = image.get("colorspace_name")
@@ -144,12 +148,9 @@ class Image:
             image.get("source_width"),
             image.get("source_height"),
         )
-        width, height = bbox.width, bbox.height
         xref = image.get("xref")
         return cls(
             bbox=bbox,
-            width=width,
-            height=height,
             source_width=source_width,
             source_height=source_height,
             colorspace_name=colorspace_name,

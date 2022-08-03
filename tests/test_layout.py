@@ -3,22 +3,30 @@ import os
 import fitz
 import pdfminer
 import pdfminer.high_level
+import pytest
+
+from pdfscraper.document import Document
 from pdfscraper.layout.annotations import (
     PDFMinerAnnotation,
     PyMuPDFAnnotation,
     Annotation,
 )
-from pdfscraper.layout.utils import PageOrientation
+from pdfscraper.layout.utils import PageOrientation, Bbox, Orientation
 from pdfscraper.page import Page
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 
-def test_drawings():
+@pytest.fixture
+def main_test_file():
     test_path = os.path.join(HERE, "samples", "test2.pdf")
-    doc = fitz.open(test_path)
+    return test_path
+
+
+def test_drawings(main_test_file):
+    doc = fitz.open(main_test_file)
     fitz_page = doc[0]
-    pdfminer_page = list(pdfminer.high_level.extract_pages(test_path))[0]
+    pdfminer_page = list(pdfminer.high_level.extract_pages(main_test_file))[0]
     for mupdf_drawing, pdfminer_drawing in zip(
         Page.from_pymupdf(fitz_page).drawings,
         Page.from_pdfminer(pdfminer_page).drawings,
@@ -28,11 +36,10 @@ def test_drawings():
         assert mupdf_drawing.bbox.__eq__(pdfminer_drawing.bbox, n=2)
 
 
-def test_images():
-    test_path = os.path.join(HERE, "samples", "test2.pdf")
-    doc = fitz.open(test_path)
+def test_images(main_test_file):
+    doc = fitz.open(main_test_file)
     fitz_page = doc[0]
-    pdfminer_page = list(pdfminer.high_level.extract_pages(test_path))[0]
+    pdfminer_page = list(pdfminer.high_level.extract_pages(main_test_file))[0]
     for mupdf_drawing, pdfminer_drawing in zip(
         Page.from_pymupdf(fitz_page).images, Page.from_pdfminer(pdfminer_page).images
     ):
@@ -47,11 +54,10 @@ def test_images():
         assert round(mupdf_drawing.height) == round(pdfminer_drawing.height)
 
 
-def test_images_saving():
-    test_path = os.path.join(HERE, "samples", "test2.pdf")
-    doc = fitz.open(test_path)
+def test_images_saving(main_test_file):
+    doc = fitz.open(main_test_file)
     fitz_page = doc[0]
-    pdfminer_page = list(pdfminer.high_level.extract_pages(test_path))[0]
+    pdfminer_page = list(pdfminer.high_level.extract_pages(main_test_file))[0]
     for mupdf_image, pdfminer_image in zip(
         Page.from_pymupdf(fitz_page).images, Page.from_pdfminer(pdfminer_page).images
     ):
@@ -104,7 +110,7 @@ def test_annotations():
         annots = list(mupdf_page.annots())
         if not annots and miner_annots:
             continue
-        orientation = PageOrientation.create(
+        page_orientation = PageOrientation.create(
             bottom_is_zero=False,
             left_is_zero=True,
             page_width=layout.width,
@@ -116,8 +122,24 @@ def test_annotations():
             anno2 = PDFMinerAnnotation.from_annot(a2)
 
             assert (
-                Annotation.from_pymupdf_annot(anno1, orientation=orientation).content
+                Annotation.from_pymupdf_annot(
+                    anno1, page_orientation=page_orientation
+                ).content
                 == Annotation.from_pdfminer_annot(
-                    anno2, orientation=orientation
+                    anno2, page_orientation=page_orientation
                 ).content
             )
+
+
+def create_docs_with_orientation(path, orientation):
+    pdfminer_doc = Document.from_pdfminer(path=path, orientation=orientation)
+    pymupdf_doc = Document.from_pymupdf(path=path, orientation=orientation)
+    return pdfminer_doc, pymupdf_doc
+
+
+def test_orientation_left_top(main_test_file):
+    pdfminer_doc, pymupdf_doc = create_docs_with_orientation(
+        main_test_file, Orientation.create(bottom_is_zero=True, left_is_zero=True)
+    )
+    print(pymupdf_doc, pdfminer_doc)
+

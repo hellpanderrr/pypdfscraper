@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict, List
 
-import fitz  # type: ignore
 
-from .utils import Bbox, create_bbox_backend, Backend, PageOrientation
+from .utils import Bbox, create_bbox_backend, Backend, PageOrientation, Rectangular
 
 
 @dataclass
@@ -111,24 +110,24 @@ class PDFMinerAnnotation:
 
 
 @dataclass
-class Annotation:
+class Annotation(Rectangular):
     content: str
     author: str
     mod_date: str
     creation_date: str
-    rect: Bbox
+    bbox: Bbox
 
     @classmethod
-    def from_pymupdf_annot(cls, annot: PyMuPDFAnnotation, orientation: PageOrientation):
-        content = annot.info.get("content")
-        author = annot.info.get("title")
+    def from_pymupdf_annot(cls, annot: PyMuPDFAnnotation, page_orientation: PageOrientation):
+        content = annot.info.get("content",'')
+        author = annot.info.get("title",'')
         name = annot.info.get("id")
-        creation_date = annot.info.get("creationDate")
+        creation_date = annot.info.get("creationDate",'')
         mod_date = annot.info.get("modDate")
         subject = annot.info.get("subject")
 
-        rect = create_bbox_backend(
-            backend=Backend.PYMUPDF, coords=annot.rect, orientation=orientation
+        bbox = create_bbox_backend(
+            backend=Backend.PYMUPDF, coords=annot.rect, page_orientation=page_orientation
         )
 
         return cls(
@@ -136,15 +135,15 @@ class Annotation:
             author=author,
             mod_date=mod_date,
             creation_date=creation_date,
-            rect=rect,
+            bbox=bbox,
         )
 
     @classmethod
     def from_pdfminer_annot(
-        cls, annot: PDFMinerAnnotation, orientation: PageOrientation
+        cls, annot: PDFMinerAnnotation, page_orientation: PageOrientation
     ):
-        rect = create_bbox_backend(
-            backend=Backend.PDFMINER, coords=annot.rect, orientation=orientation
+        bbox = create_bbox_backend(
+            backend=Backend.PDFMINER, coords=annot.rect, page_orientation=page_orientation
         )
 
         return cls(
@@ -152,5 +151,5 @@ class Annotation:
             author=annot.author,
             mod_date=annot.mod_date,
             creation_date=annot.creation_date,
-            rect=rect,
+            bbox=bbox,
         )
