@@ -4,7 +4,7 @@ import pytest
 
 from pdfscraper.document import Document
 from pdfscraper.layout.text import Word, Bbox, get_span_bbox
-from pdfscraper.layout.utils import group_objs_y, Orientation
+from pdfscraper.layout.utils import group_objs, Orientation
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ def test_group_objs_y_1(words):
         [Word(bbox=[0, 82, 0, 82])],
         [Word(bbox=[0, 91, 0, 95])],
     ]
-    assert group_objs_y(words, gap=1) == expected_result
+    assert group_objs(words, gap=1) == expected_result
 
 
 def test_group_objs_y_5(words):
@@ -54,7 +54,7 @@ def test_group_objs_y_5(words):
         [Word(bbox=[0, 77, 0, 77]), Word(bbox=[0, 82, 0, 82])],
         [Word(bbox=[0, 91, 0, 95])],
     ]
-    assert group_objs_y(words, gap=5) == expected_result
+    assert group_objs(words, gap=5) == expected_result
 
 
 def test_group_objs_y_15(words):
@@ -72,7 +72,7 @@ def test_group_objs_y_15(words):
             Word(bbox=[0, 91, 0, 95]),
         ]
     ]
-    assert group_objs_y(words, gap=15) == expected_result
+    assert group_objs(words, gap=15) == expected_result
 
 
 def test_get_span_bbox():

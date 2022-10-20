@@ -2,8 +2,7 @@ from setuptools import setup
 
 setup(
     name='pypdfscraper',
-    version='0.1.0',
-    packages=['tests', 'pdfscraper', 'pdfscraper.layout'],
+    version='0.1.0',  packages=['tests', 'pdfscraper', 'pdfscraper.layout'],
     url='',
     license='',
     author='hellpanderrr',

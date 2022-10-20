@@ -21,8 +21,11 @@ class TextLine(Rectangular):
 
     def __init__(self, words):
         self.words = words
-        self.bbox = Bbox(words[0].bbox.x0, words[0].bbox.y0,
+        if words:
+            self.bbox = Bbox(words[0].bbox.x0, words[0].bbox.y0,
                          words[-1].bbox.x1, words[-1].bbox.y1)
+        else:
+            self.bbox = Bbox(-1,-1,-1,-1)
 
     @property
     def text(self):
@@ -30,6 +33,9 @@ class TextLine(Rectangular):
 
     def __getitem__(self, key):
         return self.words[key]
+
+    def __bool__(self):
+        return bool(self.words)
 
     def __str__(self):
         return self.text

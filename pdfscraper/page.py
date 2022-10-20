@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Callable, Union, Tuple
+from typing import List, Callable, Union, Tuple, Optional
 
 from pdfscraper.layout.drawing import (
     Shape,
@@ -12,13 +12,38 @@ from pdfscraper.layout.image import Image, get_images_from_pymupdf_page, get_ima
 from pdfscraper.layout.text import Word, TextLine, Block, Line, Span
 from pdfscraper.layout.utils import (
     Bbox,
-    group_objs_y,
+    group_objs,
     get_topmost,
     Orientation,
     create_bbox_backend,
     Backend,
 )
 from pdfscraper.layout.utils import PageOrientation
+
+
+class SortedTextlines:
+    def __init__(self, textlines, words, origin=None):
+        self.textlines = textlines
+        self.words = words
+        self.origin = origin
+
+    def select(self, condition: Callable, retain_empty_lines=False) -> SortedTextlines:
+        """
+        Find content matching condition.
+        """
+        words = [i for i in self.words if condition(i)]
+        textlines = [TextLine([word for word in textline if condition(word)]) for textline in self.textlines]
+        if not retain_empty_lines:
+            textlines = list(filter(bool, textlines))
+
+        ret = SortedTextlines(words=words, textlines=textlines, origin=self.origin)
+        return ret
+
+    def resort(self):
+        return SortedTextlines(textlines=[TextLine(line) for line in group_objs(self.words)], words=self.words)
+
+    def __repr__(self) -> str:
+        return "Textlines: %s" % "".join([repr(i) + "\n" for i in self.textlines])
 
 
 class Page:
@@ -95,7 +120,13 @@ class Page:
     def sorted(self) -> List[TextLine]:
         if len(self.words) == 0:
             return [[]]
-        return [TextLine(line) for line in group_objs_y(self.words)]
+        return [TextLine(line) for line in group_objs(self.words)]
+
+    @property
+    def sorted_lines(self) -> Optional[SortedTextlines]:
+        if len(self.words) == 0:
+            return None
+        return SortedTextlines(textlines=[TextLine(line) for line in group_objs(self.words)], words=self.words)
 
     @classmethod
     def from_pymupdf(cls, page: "fitz.fitz.Page", orientation: Orientation = None) -> Page:

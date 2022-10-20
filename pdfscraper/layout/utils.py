@@ -184,6 +184,7 @@ def create_bbox_backend(backend: Backend, coords, page_orientation: PageOrientat
     :param page_orientation: page size together with X/Y axes directions.
     :return: a bounding box
     """
+    print(DEFAULT_BACKEND_PAGE_ORIENTATIONS, backend)
     bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[backend].vertical_orientation.bottom_is_zero
     left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[backend].horizontal_orientation.left_is_zero
 
@@ -244,7 +245,7 @@ def get_bottommost(block) -> float:
     return max(y0, y1)
 
 
-def group_objs_y(words: List, gap: float = 5, decimals: int = 1) -> List[List]:
+def group_objs(words: List, gap: float = 5, decimals: int = 1, axis: str = 'y') -> List[List]:
     """
     Group words into vertically adjacent lines.
 
@@ -254,15 +255,20 @@ def group_objs_y(words: List, gap: float = 5, decimals: int = 1) -> List[List]:
     :param words: list of Words
     :param gap: vertical delta between lines to be merged.
     :param decimals: rounding precision.
+    :param axis: horizontal (x) or vertical (y) grouping
 
     :return: vertically grouped lines, each line is sorted horizontally inside.
 
     """
 
     d = defaultdict(list)
+    if axis == 'y':
+        func = get_topmost
+    else:
+        func = get_leftmost
 
-    for i in sorted(words, key=lambda x: round(get_topmost(x), decimals)):
-        d[round(get_topmost(i), decimals)].append(i)
+    for i in sorted(words, key=lambda x: round(func(x), decimals)):
+        d[round(func(i), decimals)].append(i)
     lines = list(d.items())
     total = []
     curr_group = [lines[0][1]]
@@ -280,7 +286,7 @@ def group_objs_y(words: List, gap: float = 5, decimals: int = 1) -> List[List]:
     total.append(sum(curr_group, []))
 
     # sort every line horizontally
-    total = [sorted(i, key=lambda x: get_leftmost(x)) for i in total]
+    total = [sorted(i, key=lambda x: get_leftmost(x) if axis == 'y' else get_topmost(x)) for i in total]
     return total
 
 
