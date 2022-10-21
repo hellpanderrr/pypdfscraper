@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 
-from pdfscraper.layout.utils import Bbox, create_bbox_backend, Backend, PageOrientation, Rectangular
+from pdfscraper.layout.utils import Bbox, create_bbox_backend, Backend, PageOrientation
 
 
 @dataclass
@@ -110,7 +110,7 @@ class PDFMinerAnnotation:
 
 
 @dataclass
-class Annotation(Rectangular):
+class Annotation:
     content: str
     author: str
     mod_date: str
