@@ -184,7 +184,6 @@ def create_bbox_backend(backend: Backend, coords, page_orientation: PageOrientat
     :param page_orientation: page size together with X/Y axes directions.
     :return: a bounding box
     """
-    print(DEFAULT_BACKEND_PAGE_ORIENTATIONS, backend)
     bottom_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[backend].vertical_orientation.bottom_is_zero
     left_is_zero = DEFAULT_BACKEND_PAGE_ORIENTATIONS[backend].horizontal_orientation.left_is_zero
 

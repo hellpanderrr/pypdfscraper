@@ -75,12 +75,27 @@ class Page:
         ret = Page(words=words, drawings=drawings, images=images, blocks=self.blocks, raw_object=self.raw_object,)
         return ret
 
-    def __add__(self, other) -> 'Page':
+    def __add__(self, other, other_position_delta: Bbox = None) -> 'Page':
+        """
+        Create a new page by summing objects of this and another page.
+        To concatenate them vertically or horizontally move all objects of the other
+        page by specified delta.
+
+        :param other: another Page
+        :param other_position_delta:
+        :return: a new Page
+        """
+
+        def move_objects(objects, delta):
+            if delta:
+                return [i.move(delta=delta) for i in objects]
+            return objects
+
         return Page(
-            words=self.words + other.words,
-            drawings=self.drawings + other.drawings,
-            images=self.images + other.images,
-            blocks=self.blocks + other.blocks,
+            words=self.words + move_objects(other.words, delta=other_position_delta),
+            drawings=self.drawings + move_objects(other.drawings, delta=other_position_delta),
+            images=self.images + move_objects(other.images, delta=other_position_delta),
+            blocks=self.blocks + (other.blocks),
             raw_object=[self.raw_object, other.raw_object],
         )
 
