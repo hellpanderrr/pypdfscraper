@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 
-from pdfscraper.layout.utils import Bbox, create_bbox_backend, Backend, PageOrientation
+from pdfscraper.layout.utils import Bbox, create_bbox_backend, Backend, PageOrientation, Rectangular
 
 
 @dataclass
