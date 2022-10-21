@@ -22,7 +22,7 @@ from pdfscraper.layout.utils import PageOrientation
 
 
 class SortedTextlines:
-    def __init__(self, textlines, words, origin=None):
+    def __init__(self, textlines: List[TextLine], words, origin=None):
         self.textlines = textlines
         self.words = words
         self.origin = origin
