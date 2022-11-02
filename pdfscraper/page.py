@@ -21,29 +21,6 @@ from pdfscraper.layout.utils import (
 from pdfscraper.layout.utils import PageOrientation
 
 
-class SortedTextlines:
-    def __init__(self, textlines: List[TextLine], words, origin=None):
-        self.textlines = textlines
-        self.words = words
-        self.origin = origin
-
-    def select(self, condition: Callable, retain_empty_lines=False) -> SortedTextlines:
-        """
-        Find content matching condition.
-        """
-        words = [i for i in self.words if condition(i)]
-        textlines = [TextLine([word for word in textline if condition(word)]) for textline in self.textlines]
-        if not retain_empty_lines:
-            textlines = list(filter(bool, textlines))
-
-        ret = SortedTextlines(words=words, textlines=textlines, origin=self.origin)
-        return ret
-
-    def resort(self):
-        return SortedTextlines(textlines=[TextLine(line) for line in group_objs(self.words)], words=self.words)
-
-    def __repr__(self) -> str:
-        return "Textlines: %s" % "".join([repr(i) + "\n" for i in self.textlines])
 
 
 class Page:
